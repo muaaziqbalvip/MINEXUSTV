@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MINEXUS TV — Watch Movies & TV Series Online in 4K Ultra HD</title>
+  <meta name="description" content="MINEXUS TV — Stream thousands of movies and TV series live in 4K Ultra HD. Free account, watchlist, history, and instant IMDb-powered search.">
+  <meta name="keywords" content="MINEXUS TV, MINEXUS, watch movies online, watch series online, free streaming, IMDb streaming, 4K movies">
+  <meta name="author" content="Muaaz Iqbal">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://minexustv.vercel.app/">
+
+  <!-- Open Graph / Social Preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MINEXUS TV">
+  <meta property="og:title" content="MINEXUS TV — Watch Movies & TV Series Online in 4K">
+  <meta property="og:description" content="Stream thousands of movies and TV series live in 4K Ultra HD on MINEXUS TV.">
+  <meta property="og:image" content="/icons/banner.png">
+  <meta property="og:url" content="https://minexustv.vercel.app/">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#05070d">
+  <link rel="apple-touch-icon" href="/icons/icon-512.png">
+  <link rel="icon" type="image/png" href="/icons/icon-512.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Firebase SDKs (compat, no bundler needed) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+</head>
+<body oncontextmenu="return false;">
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="/" class="logo" id="logoBtn">
+          <div class="logo-badge">
+            <img src="/icons/icon-512.png" alt="MINEXUS TV" class="logo-icon-img">
+          </div>
+          <div class="logo-text">
+            MINE<span>XUS</span>
+            <span class="logo-tag">TV</span>
+          </div>
+        </a>
+
+        <nav class="nav-links">
+          <button class="nav-link active" data-category="all" id="navAll">
+            <i class="fas fa-compass"></i> Discover
+          </button>
+          <button class="nav-link" data-category="movies" id="navMovies">
+            <i class="fas fa-film"></i> Movies
+          </button>
+          <button class="nav-link" data-category="series" id="navSeries">
+            <i class="fas fa-tv"></i> TV Series
+          </button>
+          <button class="nav-link" data-category="trending" id="navTrending">
+            <i class="fas fa-fire"></i> Trending
+          </button>
+          <button class="nav-link" data-category="bollywood" id="navBollywood">
+            <i class="fas fa-clapperboard"></i> Bollywood
+          </button>
+          <button class="nav-link" data-category="top" id="navTop">
+            <i class="fas fa-star"></i> Top Rated
+          </button>
+          <button class="nav-link" data-category="watchlist" id="navWatchlist">
+            <i class="fas fa-bookmark"></i> Watchlist (<span id="watchlistCount">0</span>)
+          </button>
+        </nav>
+      </div>
+
+      <div class="nav-right">
+        <div class="search-box-wrap">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search movie title, series, or IMDb ID..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button id="searchClearBtn" class="search-clear-btn" style="display:none;">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+
+        <button class="direct-id-btn" id="directPlayNavBtn" title="Direct IMDb Stream">
+          <i class="fas fa-bolt"></i>
+          <span>Direct Play</span>
+        </button>
+
+        <!-- Install App Button (shown only when installable) -->
+        <button class="install-btn" id="installBannerBtn" title="Install MINEXUS TV App" style="display:none;">
+          <i class="fas fa-download"></i>
+          <span>Install</span>
+        </button>
+
+        <!-- Logged-out: Login button -->
+        <button class="btn btn-primary btn-nav-login" id="navLoginBtn">
+          <i class="fas fa-user"></i> Login
+        </button>
+
+        <!-- Logged-in: Avatar + Menu -->
+        <div class="nav-user-area" id="navUserArea" style="display:none;">
+          <button class="user-avatar-btn" id="userAvatarBtn"></button>
+          <div class="user-menu" id="userMenu">
+            <div class="user-menu-header">
+              <strong id="userMenuName">User</strong>
+              <span id="userMenuEmail">email@example.com</span>
+            </div>
+            <div class="user-menu-stat">
+              <i class="fas fa-clapperboard"></i> Titles Watched: <strong id="userMenuWatchCount">0</strong>
+            </div>
+            <button class="user-menu-item" id="navHistoryBtn"><i class="fas fa-history"></i> Watch History</button>
+            <button class="user-menu-item logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+      <button class="mobile-nav-link active" data-category="all"><i class="fas fa-compass"></i> Discover All</button>
+      <button class="mobile-nav-link" data-category="movies"><i class="fas fa-film"></i> Movies</button>
+      <button class="mobile-nav-link" data-category="series"><i class="fas fa-tv"></i> TV Series & Shows</button>
+      <button class="mobile-nav-link" data-category="trending"><i class="fas fa-fire"></i> Trending Now</button>
+      <button class="mobile-nav-link" data-category="bollywood"><i class="fas fa-clapperboard"></i> Bollywood / Hindi</button>
+      <button class="mobile-nav-link" data-category="top"><i class="fas fa-star"></i> Top Rated IMDb</button>
+      <button class="mobile-nav-link" data-category="watchlist"><i class="fas fa-bookmark"></i> My Watchlist</button>
+    </div>
+  </header>
+
+  <!-- ================= HERO SPOTLIGHT BANNER ================= -->
+  <section class="hero-section" id="heroSection">
+    <div class="hero-backdrop-container">
+      <div class="hero-backdrop" id="heroBackdrop"></div>
+      <div class="hero-gradient-overlay"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge-row">
+        <span class="hero-pill-badge" id="heroPill">🔥 FEATURED SPOTLIGHT</span>
+        <span class="hero-type-badge" id="heroTypeBadge">MOVIE</span>
+        <span class="hero-quality-badge">4K ULTRA HD</span>
+        <span class="hero-imdb-badge" id="heroImdbRating">
+          <i class="fas fa-star"></i> <span id="heroRatingVal">—</span>
+        </span>
+      </div>
+
+      <h1 class="hero-title" id="heroTitle">Loading MINEXUS TV...</h1>
+
+      <div class="hero-meta-row" id="heroMeta">
+        <span id="heroYear"></span>
+        <span class="meta-dot">•</span>
+        <span id="heroRuntime"></span>
+        <span class="meta-dot">•</span>
+        <span id="heroGenres"></span>
+      </div>
+
+      <p class="hero-synopsis" id="heroSynopsis">
+        Fetching the latest live catalog from IMDb...
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="heroPlayBtn">
+          <i class="fas fa-play"></i> Watch Now
+        </button>
+        <button class="btn btn-secondary" id="heroInfoBtn">
+          <i class="fas fa-info-circle"></i> Info & Details
+        </button>
+        <button class="btn btn-icon" id="heroWatchlistBtn" title="Add to Watchlist">
+          <i class="far fa-bookmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-indicators" id="heroIndicators"></div>
+  </section>
+
+  <!-- ================= DIRECT PLAY & QUICK LAUNCH BAR ================= -->
+  <section class="direct-launcher-section">
+    <div class="section-container">
+      <div class="direct-launcher-card">
+        <div class="launcher-left">
+          <div class="launcher-icon">
+            <i class="fas fa-play"></i>
+          </div>
+          <div class="launcher-text">
+            <h3>Instant MINEXUS Cinema Launcher</h3>
+            <p>Paste any IMDb ID (e.g. <code>tt1375666</code>, <code>tt0816692</code>) to stream immediately</p>
+          </div>
+        </div>
+
+        <form class="launcher-form" id="directPlayForm">
+          <div class="launcher-input-box">
+            <i class="fas fa-film"></i>
+            <input
+              type="text"
+              id="directImdbInput"
+              placeholder="Enter IMDb ID (e.g. tt1375666 or 1375666)..."
+              required
+            >
+          </div>
+          <button type="submit" class="btn btn-primary btn-launcher">
+            <i class="fas fa-play"></i> Play Now
+          </button>
+        </form>
+      </div>
+
+      <div class="preset-chips-row">
+        <span class="preset-label"><i class="fas fa-fire"></i> Fast Picks:</span>
+        <button class="chip-btn" data-imdb="tt1375666"><i class="fas fa-film"></i> Inception</button>
+        <button class="chip-btn" data-imdb="tt0816692"><i class="fas fa-film"></i> Interstellar</button>
+        <button class="chip-btn" data-imdb="tt0468569"><i class="fas fa-film"></i> The Dark Knight</button>
+        <button class="chip-btn" data-imdb="tt15398776"><i class="fas fa-film"></i> Oppenheimer</button>
+        <button class="chip-btn" data-imdb="tt15239678"><i class="fas fa-film"></i> Dune 2</button>
+        <button class="chip-btn" data-imdb="tt0903747"><i class="fas fa-tv"></i> Breaking Bad</button>
+        <button class="chip-btn" data-imdb="tt4574334"><i class="fas fa-tv"></i> Stranger Things</button>
+        <button class="chip-btn" data-imdb="tt6473300"><i class="fas fa-tv"></i> Mirzapur</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CATEGORY FILTER TABS ================= -->
+  <section class="filters-section">
+    <div class="section-container">
+      <div class="filter-pills-wrap" id="filterPillsWrap">
+        <button class="filter-pill active" data-filter="all"><i class="fas fa-globe"></i> All</button>
+        <button class="filter-pill" data-filter="movies"><i class="fas fa-film"></i> Movies</button>
+        <button class="filter-pill" data-filter="series"><i class="fas fa-tv"></i> Web Series</button>
+        <button class="filter-pill" data-filter="trending"><i class="fas fa-fire"></i> Trending</button>
+        <button class="filter-pill" data-filter="bollywood"><i class="fas fa-clapperboard"></i> Bollywood</button>
+        <button class="filter-pill" data-filter="top"><i class="fas fa-star"></i> Top Rated</button>
+        <button class="filter-pill" data-filter="watchlist"><i class="fas fa-bookmark"></i> Watchlist</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PERSONALIZED "RECOMMENDED FOR YOU" ================= -->
+  <section class="personalized-section" id="personalizedSection" style="display:none;">
+    <div class="section-container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-heading"><i class="fas fa-wand-magic-sparkles"></i> Recommended For You</h2>
+          <p class="section-subheading" id="personalizedSubtext">Based on what you've been watching</p>
+        </div>
+      </div>
+      <div class="movie-grid personalized-grid" id="personalizedRow"></div>
+    </div>
+  </section>
+
+  <!-- ================= MAIN CONTENT & CATALOG ================= -->
+  <main class="main-content">
+    <div class="section-container">
+
+      <div class="section-header">
+        <div>
+          <h2 class="section-heading" id="sectionHeading">🧭 Discover MINEXUS TV</h2>
+          <p class="section-subheading" id="sectionSubtext">Live IMDb catalog — movies & series in Ultra HD.</p>
+        </div>
+        <div class="catalog-controls">
+          <span class="movie-count-badge" id="movieCountBadge">Loading titles...</span>
+        </div>
+      </div>
+
+      <div class="movie-grid" id="movieGrid"></div>
+
+      <div class="catalog-loader" id="catalogLoader" style="display:none;">
+        <div class="spinner"></div><span>Loading live titles from IMDb...</span>
+      </div>
+
+      <div class="load-more-wrap">
+        <button class="btn btn-secondary" id="loadMoreBtn"><i class="fas fa-plus"></i> Load More Titles</button>
+      </div>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <i class="fas fa-film-slash empty-icon"></i>
+        <h3>No Titles Found</h3>
+        <p>We couldn't find any movie or series matching your criteria. Try searching another title or IMDb ID.</p>
+        <button class="btn btn-primary" id="resetFiltersBtn"><i class="fas fa-undo"></i> Reset Filters</button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= CINEMA VIDEO PLAYER MODAL ================= -->
+  <div class="player-modal" id="playerModal" role="dialog" aria-modal="true">
+    <div class="player-modal-backdrop" id="playerModalBackdrop"></div>
+
+    <div class="player-modal-container">
+      <div class="player-modal-header">
+        <div class="player-title-info">
+          <span class="player-live-badge"><i class="fas fa-circle"></i> MINEXUS PRO STREAM</span>
+          <h2 class="player-movie-title" id="playerMovieTitle">Movie Title</h2>
+        </div>
+
+        <div class="player-modal-actions">
+          <button class="player-action-btn" id="theaterModeBtn" title="Toggle Theater Mode">
+            <i class="fas fa-expand-arrows-alt"></i>
+          </button>
+          <button class="player-action-btn" id="shareMovieBtn" title="Share Stream Link">
+            <i class="fas fa-share-alt"></i>
+          </button>
+          <button class="player-action-btn" id="playerWatchlistToggle" title="Save to Watchlist">
+            <i class="far fa-bookmark"></i>
+          </button>
+          <button class="player-close-btn" id="closePlayerBtn" title="Close Player (Esc)">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="player-server-selector">
+        <div class="server-label"><i class="fas fa-server"></i> MINEXUS Cinema Server:</div>
+        <div class="server-buttons-wrap" id="serverButtonsWrap">
+          <button class="server-btn active" data-server="server1"><i class="fas fa-star"></i> Server 1 (Ultra HD Fast)</button>
+          <button class="server-btn" data-server="server2"><i class="fas fa-bolt"></i> Server 2 (High Speed)</button>
+          <button class="server-btn" data-server="server3"><i class="fas fa-play"></i> Server 3 (Cloud Multi)</button>
+          <button class="server-btn" data-server="server4"><i class="fas fa-shield-halved"></i> Server 4 (4K Stream)</button>
+          <button class="server-btn" data-server="server5"><i class="fas fa-globe"></i> Server 5 (Backup Engine)</button>
+        </div>
+      </div>
+
+      <div class="video-frame-container" id="videoFrameContainer">
+        <div class="video-loader" id="videoLoader">
+          <div class="spinner"></div>
+          <span>Connecting to MINEXUS Ultra Stream...</span>
+        </div>
+        <iframe
+          id="cinemaIframe"
+          src=""
+          title="MINEXUS TV Cinema Player"
+          allowfullscreen
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; display-capture"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-presentation allow-orientation-lock allow-popups allow-popups-to-escape-sandbox"
+        ></iframe>
+      </div>
+
+      <div class="series-controls-section" id="seriesControlsSection" style="display:none;">
+        <div class="series-controls-header">
+          <div class="season-select-wrap">
+            <label for="seasonSelect"><i class="fas fa-list-ol"></i> Season:</label>
+            <select id="seasonSelect" class="season-dropdown"></select>
+          </div>
+          <div class="episode-nav-btns">
+            <button class="btn btn-sm btn-secondary" id="prevEpisodeBtn"><i class="fas fa-backward-step"></i> Prev Ep</button>
+            <span class="current-ep-pill" id="currentEpPill">S1: E1</span>
+            <button class="btn btn-sm btn-primary" id="nextEpisodeBtn">Next Ep <i class="fas fa-forward-step"></i></button>
+          </div>
+        </div>
+
+        <div class="episodes-grid-wrap">
+          <div class="episodes-title"><i class="fas fa-tv"></i> Select Episode:</div>
+          <div class="episodes-grid" id="episodesGrid"></div>
+        </div>
+      </div>
+
+      <div class="player-server-bar">
+        <div class="server-status">
+          <i class="fas fa-check-circle"></i>
+          <span id="activeServerStatus">Active: MINEXUS Server 1</span>
+        </div>
+        <div class="player-tips">
+          <i class="fas fa-circle-play"></i> Click play inside the video player to start streaming.
+        </div>
+      </div>
+
+      <div class="player-meta-section" id="playerMetaSection">
+        <div class="player-details-grid">
+          <div class="player-poster-wrap">
+            <img src="" alt="" id="playerPosterImg" class="player-poster-img">
+          </div>
+          <div class="player-info-details">
+            <div class="player-tags-row" id="playerTagsRow"></div>
+            <p class="player-description" id="playerDescription"></p>
+            <div class="player-specs-grid" id="playerSpecsGrid"></div>
+          </div>
+        </div>
+
+        <div class="player-recommendations">
+          <h3><i class="fas fa-sparkles"></i> More Like This</h3>
+          <div class="recommendations-row" id="recommendationsRow"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= PREVIEW / INFO MODAL ================= -->
+  <div class="info-modal" id="infoModal">
+    <div class="info-modal-backdrop" id="infoModalBackdrop"></div>
+    <div class="info-modal-card">
+      <button class="info-modal-close" id="infoModalClose"><i class="fas fa-times"></i></button>
+
+      <div class="info-modal-banner">
+        <img src="" id="infoBannerImg" alt="Backdrop">
+        <div class="info-banner-overlay"></div>
+        <div class="info-banner-content">
+          <span class="info-imdb-pill" id="infoRatingPill"><i class="fas fa-star"></i> —</span>
+          <span class="hero-type-badge" id="infoTypeBadge">MOVIE</span>
+          <h2 id="infoTitle">Title</h2>
+          <div class="info-meta" id="infoMetaRow"></div>
+        </div>
+      </div>
+
+      <div class="info-modal-body">
+        <p class="info-plot" id="infoPlot">Plot summary...</p>
+        <div class="info-details-table" id="infoDetailsTable"></div>
+
+        <div class="info-actions">
+          <button class="btn btn-primary btn-lg" id="infoPlayNowBtn"><i class="fas fa-play"></i> Watch Now</button>
+          <button class="btn btn-secondary" id="infoWatchlistBtn"><i class="far fa-bookmark"></i> Watchlist</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= AUTH MODAL (Netflix-style Login/Signup) ================= -->
+  <div class="auth-modal" id="authModal">
+    <div class="auth-modal-backdrop" id="authModalBackdrop"></div>
+    <div class="auth-modal-card">
+      <button class="auth-modal-close" id="authModalClose"><i class="fas fa-times"></i></button>
+
+      <div class="auth-modal-brand">
+        <img src="/icons/icon-512.png" alt="MINEXUS TV">
+        <h2>MINEXUS <span>TV</span></h2>
+      </div>
+
+      <p class="auth-gate-note" id="authGateNote" style="display:none;"></p>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="authTabLogin">Login</button>
+        <button class="auth-tab" id="authTabSignup">Sign Up</button>
+      </div>
+
+      <div class="auth-error" id="authError" style="display:none;"></div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="loginForm" style="display:flex;">
+        <label>Email
+          <input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
+        </label>
+        <label>Password
+          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+        </label>
+        <a href="#" class="forgot-link" id="forgotPasswordLink">Forgot Password?</a>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="loginSubmitBtn">
+          <i class="fas fa-right-to-bracket"></i> Login
+        </button>
+        <div class="auth-divider"><span>or</span></div>
+        <button type="button" class="btn btn-google" id="googleSignInBtn">
+          <i class="fab fa-google"></i> Continue with Google
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form class="auth-form" id="signupForm" style="display:none;">
+        <label>Full Name
+          <input type="text" id="signupName" placeholder="Your Name" required autocomplete="name">
+        </label>
+        <label>Email
+          <input type="email" id="signupEmail" placeholder="you@example.com" required autocomplete="email">
+        </label>
+        <label>Password
+          <input type="password" id="signupPassword" placeholder="At least 6 characters" required autocomplete="new-password">
+        </label>
+        <button type="submit" class="btn btn-primary btn-auth-submit" id="signupSubmitBtn">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+        <div class="auth-divider"><span>or</span></div>
+        <button type="button" class="btn btn-google" id="googleSignUpBtn">
+          <i class="fab fa-google"></i> Sign Up with Google
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="section-container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="logo">
+          <div class="logo-badge"><img src="/icons/icon-512.png" alt="MINEXUS TV" class="logo-icon-img"></div>
+          <div class="logo-text">MINE<span>XUS</span> TV</div>
+        </div>
+        <p class="footer-desc">
+          The ultimate cinema and web series streaming platform. Watch all movies and TV shows in 4K Ultra HD, live from IMDb.
+        </p>
+        <div class="footer-socials">
+          <a href="https://t.me/minexustv" target="_blank" rel="noopener" class="social-link" title="Telegram">
+            <i class="fab fa-telegram"></i>
+          </a>
+          <a href="#" class="social-link" title="Share MINEXUS TV" id="footerShareBtn">
+            <i class="fas fa-share-nodes"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Explore Categories</h4>
+        <ul>
+          <li><a href="#" data-filter="movies">Movies Hub</a></li>
+          <li><a href="#" data-filter="series">TV & Web Series</a></li>
+          <li><a href="#" data-filter="bollywood">Bollywood / Hindi</a></li>
+          <li><a href="#" data-filter="trending">Trending Now</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Stream Servers</h4>
+        <ul>
+          <li><span>⭐ Server 1 (Ultra HD Fast)</span></li>
+          <li><span>⚡ Server 2 (High Speed)</span></li>
+          <li><span>⚡ Server 3 (Cloud Multi)</span></li>
+          <li><span>⚡ Server 4 (4K Stream)</span></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>About & Privacy</h4>
+        <p class="footer-disclaimer">MINEXUS TV — Protected & Encrypted Streaming Platform.</p>
+        <div class="footer-status-pill"><span class="status-dot"></span> MINEXUS Engine Online • 2026</div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="section-container footer-bottom-flex">
+        <span>© 2026 <strong>MINEXUS TV</strong>. All rights reserved.</span>
+        <span class="developer-credit">Developed with ❤️ by <strong>Muaaz Iqbal</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase + App Modules -->
+  <script src="/js/firebase-init.js"></script>
+  <script src="/js/db.js"></script>
+  <script src="/js/cinemeta-api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    // Login button opens the auth modal directly
+    document.getElementById('navLoginBtn').addEventListener('click', function () {
+      document.getElementById('authModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('authGateNote').style.display = 'none';
+    });
+    // Toggle login/signup button visibility based on auth state
+    firebase.auth().onAuthStateChanged(function (user) {
+      document.getElementById('navLoginBtn').style.display = user ? 'none' : 'flex';
+    });
+  </script>
+</body>
+</html>
