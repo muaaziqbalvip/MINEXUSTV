@@ -1,597 +1,2014 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MINEXUS TV — Watch Movies & TV Series Online in 4K Ultra HD</title>
-  <meta name="description" content="MINEXUS TV — Stream thousands of movies and TV series live in 4K Ultra HD. Free account, watchlist, history, and instant IMDb-powered search.">
-  <meta name="keywords" content="MINEXUS TV, MINEXUS, watch movies online, watch series online, free streaming, IMDb streaming, 4K movies">
-  <meta name="author" content="Muaaz Iqbal">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://minexustv.vercel.app/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>MINEXUS TV — 4K Cinema, Series & Live TV</title>
+<meta name="description" content="MINEXUS TV — Stream all Pakistani, Indian, Hollywood movies, series, and Live TV in 4K Ultra HD.">
+<meta name="author" content="Muaaz Iqbal">
+<meta name="theme-color" content="#08090d">
 
-  <!-- Open Graph / Social Preview -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="MINEXUS TV">
-  <meta property="og:title" content="MINEXUS TV — Watch Movies & TV Series Online in 4K">
-  <meta property="og:description" content="Stream thousands of movies and TV series live in 4K Ultra HD on MINEXUS TV.">
-  <meta property="og:image" content="/icons/banner.png">
-  <meta property="og:url" content="https://minexustv.vercel.app/">
-  <meta name="twitter:card" content="summary_large_image">
+<!-- Fonts & Icons -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#05070d">
-  <link rel="apple-touch-icon" href="/icons/icon-512.png">
-  <link rel="icon" type="image/png" href="/icons/icon-512.png">
+<!-- Hls.js for Live TV Streams -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-  <!-- FontAwesome 6 Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ===== DESIGN SYSTEM ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080c;
+  --bg2:#0e1017;
+  --bg3:#141724;
+  --bg4:#1b2030;
+  --border:rgba(255,255,255,0.08);
+  --border-active:rgba(229,9,20,0.4);
+  --accent:#e50914;
+  --accent-hover:#ff2633;
+  --accent-glow:rgba(229,9,20,0.38);
+  --gold:#f5c518;
+  --gold-glow:rgba(245,197,24,0.3);
+  --cyan:#00d2ff;
+  --green:#00e676;
+  --purple:#9d4edd;
+  --text:#f0f2f8;
+  --text2:#9ea4b8;
+  --text3:#5d637a;
+  --card-radius:12px;
+  --nav-h:56px;
+  --bottom-h:64px;
+  --font:'Inter',sans-serif;
+  --font2:'Space Grotesk',sans-serif;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  padding-bottom:var(--bottom-h);
+  user-select:none;-webkit-user-select:none;
+}
+body.no-scroll{overflow:hidden!important}
+body.in-player .bottom-bar{display:none!important}
+body.in-player{padding-bottom:0!important}
 
-  <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="/css/style.css">
+img{display:block;max-width:100%}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;touch-action:manipulation}
+a{color:inherit;text-decoration:none}
+input,select{font-family:inherit}
 
-  <!-- Firebase SDKs (compat, no bundler needed) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+
+/* ===== NAVBAR ===== */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:var(--nav-h);
+  background:rgba(7,8,12,0.96);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  width:100%;max-width:1400px;margin:0 auto;
+  padding:0 16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-left{display:flex;align-items:center;gap:16px}
+.logo{
+  display:flex;align-items:center;gap:8px;
+  cursor:pointer;font-family:var(--font2);text-decoration:none;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),#8b0000);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;color:#fff;
+  box-shadow:0 0 14px var(--accent-glow);
+}
+.logo-name{font-size:16px;font-weight:900;letter-spacing:-.4px;line-height:1}
+.logo-name span{color:var(--accent)}
+
+.nav-tabs{display:flex;align-items:center;gap:4px}
+.nav-tab{
+  padding:6px 12px;border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--text2);
+  transition:.2s;display:flex;align-items:center;gap:6px;
+}
+.nav-tab:hover,.nav-tab.active{color:#fff;background:var(--bg3)}
+.nav-tab.active{color:var(--accent);background:rgba(229,9,20,0.12)}
+.nav-tab i{font-size:12px}
+
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-badge-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:20px;
+  background:rgba(245,197,24,0.12);border:1px solid rgba(245,197,24,0.3);
+  color:var(--gold);font-size:11px;font-weight:800;
+}
+.nav-badge-btn i{font-size:12px}
+
+/* ===== SEARCH BAR ===== */
+.mobile-search-row{
+  padding:12px 16px 0;
+  max-width:1400px;margin:0 auto;
+}
+.search-box-container{position:relative;width:100%}
+.search-box-input{
+  width:100%;background:var(--bg3);
+  border:1px solid var(--border);border-radius:10px;
+  padding:11px 36px 11px 38px;
+  color:var(--text);font-size:13px;outline:none;
+  transition:.2s;
+}
+.search-box-input:focus{
+  border-color:rgba(229,9,20,.5);
+  background:var(--bg4);box-shadow:0 0 0 3px rgba(229,9,20,.15);
+}
+.search-box-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:13px;pointer-events:none;
+}
+.search-box-clear{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:12px;display:none;padding:4px;
+}
+.search-dropdown{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;
+  box-shadow:0 16px 36px rgba(0,0,0,.85);
+  z-index:400;display:none;max-height:360px;overflow-y:auto;
+}
+.search-dropdown.show{display:block}
+.sdrop-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);
+}
+.sdrop-item:hover{background:var(--bg4)}
+.sdrop-poster{width:32px;height:46px;border-radius:4px;object-fit:cover;background:var(--bg4);flex-shrink:0}
+.sdrop-info{flex:1;min-width:0}
+.sdrop-title{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sdrop-meta{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ===== BOTTOM NAVIGATION BAR (WITH ACCOUNT TAB) ===== */
+.bottom-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:250;
+  height:var(--bottom-h);
+  background:rgba(7,8,12,0.98);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;align-items:stretch;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;
+  color:var(--text3);font-size:10px;font-weight:600;
+  transition:.2s;padding:6px 0;position:relative;
+}
+.tab-btn i{font-size:16px;transition:.2s}
+.tab-btn.active{color:var(--accent)}
+.tab-btn.active i{transform:scale(1.1)}
+.tab-btn.active::after{
+  content:'';position:absolute;top:0;left:26%;right:26%;
+  height:2.5px;border-radius:0 0 4px 4px;background:var(--accent);
+}
+
+/* ===== MAIN VIEWS ===== */
+.view{display:none;min-height:calc(100vh - var(--nav-h) - var(--bottom-h));padding-top:var(--nav-h)}
+.view.active{display:block}
+
+/* ===== HERO SPOTLIGHT BANNER ===== */
+.hero{
+  position:relative;min-height:460px;
+  overflow:hidden;display:flex;align-items:flex-end;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center top;
+  transition:background-image .5s ease-in-out;
+}
+.hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(0deg,var(--bg) 0%,rgba(7,8,12,.7) 50%,rgba(7,8,12,.2) 100%);
+}
+.hero-side-fade{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,var(--bg) 0%,transparent 65%);
+}
+.hero-content{
+  position:relative;z-index:2;
+  padding:0 20px 32px;max-width:620px;
+}
+.hero-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.badge{
+  font-size:9px;font-weight:800;letter-spacing:.6px;
+  padding:3px 7px;border-radius:4px;text-transform:uppercase;
+}
+.badge-accent{background:var(--accent);color:#fff}
+.badge-gold{background:rgba(245,197,24,.15);color:var(--gold);border:1px solid rgba(245,197,24,.3)}
+.badge-outline{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.15)}
+.hero-title{
+  font-family:var(--font2);
+  font-size:clamp(24px,4.5vw,44px);
+  font-weight:900;line-height:1.15;margin-bottom:8px;
+  text-shadow:0 2px 16px rgba(0,0,0,.7);
+}
+.hero-meta{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--text2);margin-bottom:10px;
+  flex-wrap:wrap;font-weight:600;
+}
+.hero-meta .dot{color:var(--text3)}
+.hero-synopsis{
+  font-size:13px;color:var(--text2);
+  line-height:1.5;margin-bottom:16px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.hero-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:700;transition:.2s;cursor:pointer;border:none;
+}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 14px var(--accent-glow)}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.btn-secondary{
+  background:rgba(255,255,255,.12);color:#fff;
+  border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(8px);
+}
+.btn-icon{
+  width:38px;height:38px;border-radius:8px;
+  background:rgba(255,255,255,.1);color:#fff;
+  border:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+
+.hero-dots{
+  position:absolute;bottom:14px;right:20px;z-index:3;display:flex;gap:5px;
+}
+.hero-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,.3);cursor:pointer;transition:.2s;
+}
+.hero-dot.active{background:var(--accent);width:16px;border-radius:3px}
+
+/* ===== SECTIONS & CARDS ===== */
+.section{padding:20px 0 6px}
+.section-inner{padding:0 16px;max-width:1400px;margin:0 auto}
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
+}
+.section-title{
+  font-family:var(--font2);font-size:17px;font-weight:800;
+  display:flex;align-items:center;gap:6px;
+}
+.section-title span.accent{color:var(--accent)}
+.see-all{font-size:12px;color:var(--accent);font-weight:700;padding:4px 8px;border-radius:6px}
+
+.h-scroll{
+  display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.h-scroll::-webkit-scrollbar{display:none}
+
+.card{
+  flex-shrink:0;cursor:pointer;scroll-snap-align:start;
+  position:relative;border-radius:var(--card-radius);overflow:hidden;
+  transition:.25s;background:var(--bg3);border:1px solid var(--border);
+}
+.card:hover{transform:scale(1.03);z-index:2;border-color:var(--border-active)}
+.card-poster{width:100%;aspect-ratio:2/3;object-fit:cover;background:var(--bg4)}
+.card.wide .card-poster{aspect-ratio:16/9}
+.card.featured{width:200px}
+.card.standard{width:140px}
+.card.wide{width:230px}
+.card.big{width:165px}
+.card-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.2) 50%,transparent 100%);
+  opacity:0;transition:.25s;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;
+}
+.card:hover .card-overlay{opacity:1}
+.card-play-icon{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(229,9,20,.95);display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:14px;margin:0 auto 6px;
+  box-shadow:0 2px 10px rgba(229,9,20,0.5);
+}
+.card-info{padding:8px 10px 10px;background:transparent}
+.card-title{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.card-rating{
+  position:absolute;top:6px;right:6px;
+  background:rgba(0,0,0,.8);backdrop-filter:blur(4px);
+  border-radius:4px;padding:2px 5px;font-size:10px;font-weight:800;color:var(--gold);
+  display:flex;align-items:center;gap:3px;
+}
+.card-type{
+  position:absolute;top:6px;left:6px;
+  background:rgba(229,9,20,.9);border-radius:3px;padding:2px 5px;
+  font-size:8px;font-weight:800;color:#fff;letter-spacing:.4px;
+}
+
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;
+}
+
+.filter-row{
+  display:flex;gap:6px;overflow-x:auto;padding:12px 16px 0;scrollbar-width:none;
+}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-pill{
+  padding:6px 14px;border-radius:18px;font-size:11px;font-weight:700;
+  white-space:nowrap;background:var(--bg3);color:var(--text2);
+  border:1px solid var(--border);transition:.2s;flex-shrink:0;
+}
+.filter-pill.active{
+  background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 3px 10px var(--accent-glow);
+}
+
+/* ===== DIRECT PLAY BAR ===== */
+.direct-bar{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;padding:14px;margin:12px 16px 4px;
+}
+.direct-bar-title{
+  font-size:11px;font-weight:800;letter-spacing:.6px;
+  color:var(--text3);text-transform:uppercase;margin-bottom:8px;
+  display:flex;align-items:center;gap:5px;
+}
+.direct-bar-title i{color:var(--accent)}
+.direct-form{display:flex;gap:6px}
+.direct-input{
+  flex:1;background:var(--bg4);border:1px solid var(--border);
+  border-radius:8px;padding:9px 12px;color:var(--text);font-size:12px;outline:none;
+}
+.btn-direct{
+  padding:9px 14px;border-radius:8px;
+  background:var(--accent);color:#fff;font-size:12px;font-weight:800;white-space:nowrap;
+}
+.chips-row{display:flex;gap:5px;margin-top:8px;overflow-x:auto;scrollbar-width:none}
+.chips-row::-webkit-scrollbar{display:none}
+.chip{
+  padding:5px 10px;border-radius:5px;background:var(--bg4);
+  border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--text2);
+  white-space:nowrap;flex-shrink:0;cursor:pointer;
+}
+
+/* ===== COMMUNITY LEADERBOARD DASHBOARD ===== */
+.leaderboard-wrap{padding:16px}
+.leaderboard-hero{
+  background:linear-gradient(135deg, #1c152b 0%, #10121d 100%);
+  border:1px solid rgba(157,78,221,0.3);
+  border-radius:16px;padding:20px;margin-bottom:16px;text-align:center;
+}
+.leaderboard-title{
+  font-family:var(--font2);font-size:20px;font-weight:900;color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;
+}
+.leader-podium{
+  display:flex;align-items:flex-end;justify-content:center;gap:12px;margin:20px 0 10px;
+}
+.podium-item{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.podium-avatar{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;color:#fff;position:relative;
+}
+.podium-item.first .podium-avatar{
+  width:56px;height:56px;font-size:20px;
+  background:linear-gradient(135deg,#ffd700,#ff9100);
+  box-shadow:0 0 18px var(--gold-glow);border:2px solid #fff;
+}
+.podium-item.second .podium-avatar{
+  background:linear-gradient(135deg,#e0e0e0,#9e9e9e);
+}
+.podium-item.third .podium-avatar{
+  background:linear-gradient(135deg,#cd7f32,#8d5524);
+}
+.crown-icon{position:absolute;top:-14px;color:#ffd700;font-size:14px}
+.podium-name{font-size:11px;font-weight:800;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.podium-hours{font-size:10px;color:var(--text2);font-weight:700}
+
+.leader-list{display:flex;flex-direction:column;gap:6px}
+.leader-row{
+  display:flex;align-items:center;gap:12px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;
+}
+.leader-rank{
+  font-size:14px;font-weight:900;width:24px;color:var(--text3);text-align:center;
+}
+.leader-row:nth-child(1) .leader-rank{color:var(--gold)}
+.leader-row:nth-child(2) .leader-rank{color:#e0e0e0}
+.leader-row:nth-child(3) .leader-rank{color:#cd7f32}
+.leader-user-info{flex:1;min-width:0}
+.leader-uname{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leader-umeta{font-size:10px;color:var(--text3)}
+.leader-score{
+  padding:4px 8px;border-radius:6px;
+  background:rgba(255,255,255,0.06);font-size:11px;font-weight:800;color:var(--cyan);
+}
+
+/* ===== USER ACCOUNT VIEW ===== */
+.account-view{padding:16px}
+.account-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;padding:20px;margin-bottom:14px;
+}
+.acc-header-flex{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.acc-avatar{
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#8b0000);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:900;color:#fff;
+}
+.acc-name{font-size:16px;font-weight:800;margin-bottom:2px}
+.acc-badge{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  background:rgba(245,197,24,0.15);color:var(--gold);
+  border:1px solid rgba(245,197,24,0.3);font-size:9px;font-weight:800;
+}
+.acc-stats-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  background:var(--bg4);border-radius:10px;padding:12px 6px;text-align:center;
+}
+.acc-stat-box strong{display:block;font-size:16px;font-weight:900;color:#fff}
+.acc-stat-box span{font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase}
+
+.acc-sub-tabs{
+  display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;
+}
+.acc-sub-tabs::-webkit-scrollbar{display:none}
+.acc-stab{
+  padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;
+  background:var(--bg3);color:var(--text2);border:1px solid var(--border);white-space:nowrap;
+}
+.acc-stab.active{background:var(--accent);color:#fff;border-color:transparent}
+
+.acc-list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+
+/* ===== LIVE TV VIEW STYLING ===== */
+.live-header{
+  padding:16px 16px 10px;max-width:1400px;margin:0 auto;
+}
+.live-title{
+  font-family:var(--font2);font-size:20px;font-weight:900;
+  display:flex;align-items:center;gap:8px;margin-bottom:2px;
+}
+.live-dot{
+  width:10px;height:10px;border-radius:50%;background:#ff3333;
+  box-shadow:0 0 10px #ff3333;display:inline-block;animation:pulseLive 1.5s infinite;
+}
+@keyframes pulseLive{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+.live-sub{font-size:11px;color:var(--text3);font-weight:600}
+
+.country-tabs{
+  display:flex;gap:8px;overflow-x:auto;padding:8px 16px 14px;
+  max-width:1400px;margin:0 auto;scrollbar-width:none;
+}
+.country-tabs::-webkit-scrollbar{display:none}
+.country-tab{
+  padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;
+  white-space:nowrap;background:var(--bg3);color:var(--text2);
+  border:1px solid var(--border);transition:.2s;flex-shrink:0;cursor:pointer;
+}
+.country-tab:hover{background:var(--bg4);color:#fff}
+.country-tab.active{
+  background:var(--accent);color:#fff;border-color:transparent;
+  box-shadow:0 3px 12px var(--accent-glow);
+}
+
+.channels-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;
+  padding:0 16px 24px;max-width:1400px;margin:0 auto;
+}
+.channel-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:.25s;display:flex;flex-direction:column;
+}
+.channel-card:hover{
+  transform:translateY(-3px);border-color:var(--border-active);
+  background:var(--bg4);box-shadow:0 8px 20px rgba(0,0,0,0.5);
+}
+.channel-logo-wrap{
+  width:100%;height:100px;background:#090b12;
+  position:relative;display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--border);padding:12px;
+}
+.channel-logo{
+  max-width:100%;max-height:100%;object-fit:contain;
+}
+.channel-logo-fallback{
+  font-family:var(--font2);font-size:22px;font-weight:900;
+  color:rgba(255,255,255,0.18);letter-spacing:1px;
+}
+.channel-live-badge{
+  position:absolute;top:8px;right:8px;
+  background:rgba(229,9,20,0.92);color:#fff;
+  font-size:8px;font-weight:900;letter-spacing:.6px;
+  padding:2px 6px;border-radius:4px;
+}
+.channel-info{padding:10px 12px}
+.channel-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.channel-country{font-size:10px;color:var(--text3);font-weight:600}
+
+/* ===== CINEMA VIDEO PLAYER VIEW ===== */
+#viewPlayer, #viewLivePlayer{
+  position:fixed;inset:0;z-index:350;
+  background:var(--bg);padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+#viewPlayer.active, #viewLivePlayer.active{display:flex;flex-direction:column}
+.player-topbar{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:rgba(7,8,12,.96);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;flex-shrink:0;
+}
+.player-back{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--bg3);display:flex;align-items:center;justify-content:center;
+  color:var(--text);font-size:15px;border:1px solid var(--border);flex-shrink:0;
+}
+.player-topbar-info{flex:1;min-width:0}
+.player-topbar-title{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-topbar-meta{font-size:10px;color:var(--text3);margin-top:1px}
+
+.player-frame-wrap{width:100%;background:#000;position:relative;flex-shrink:0}
+.player-frame-wrap::before{content:'';display:block;padding-top:56.25%}
+.player-frame-wrap iframe, .player-frame-wrap video{position:absolute;inset:0;width:100%;height:100%;border:none}
+.player-loader{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#000;color:var(--text2);gap:10px;z-index:2;
+}
+.spinner{
+  width:34px;height:34px;border:3px solid rgba(255,255,255,.1);
+  border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* All Servers Bar */
+.server-section{padding:12px 14px 6px;flex-shrink:0}
+.server-label{
+  font-size:10px;font-weight:800;letter-spacing:1px;
+  color:var(--text3);text-transform:uppercase;margin-bottom:8px;
+  display:flex;align-items:center;gap:5px;
+}
+.server-label i{color:var(--accent)}
+.servers-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.servers-row::-webkit-scrollbar{display:none}
+.srv-btn{
+  padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;
+  white-space:nowrap;background:var(--bg3);color:var(--text2);border:1px solid var(--border);
+  flex-shrink:0;transition:.2s;display:flex;align-items:center;gap:5px;
+}
+.srv-btn.active{
+  background:rgba(229,9,20,.15);color:var(--accent);border-color:rgba(229,9,20,.5);
+}
+
+.episodes-section{padding:0 14px 10px;flex-shrink:0}
+.season-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.season-select{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;font-weight:700;outline:none;
+}
+.ep-nav{display:flex;gap:6px;margin-left:auto}
+.ep-nav-btn{padding:6px 12px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:11px;font-weight:700}
+.cur-ep-badge{padding:5px 10px;border-radius:6px;background:rgba(229,9,20,.15);color:var(--accent);font-size:11px;font-weight:800;border:1px solid rgba(229,9,20,.3)}
+.episodes-scroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.episodes-scroll::-webkit-scrollbar{display:none}
+.ep-chip{padding:6px 12px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);font-size:11px;font-weight:700;white-space:nowrap;color:var(--text2);flex-shrink:0;cursor:pointer}
+.ep-chip.active{background:var(--accent);color:#fff;border-color:transparent}
+
+/* Player Meta */
+.player-meta{padding:14px;flex:1;min-height:0}
+.player-meta-grid{display:flex;gap:14px;margin-bottom:16px}
+.player-poster{width:85px;height:125px;border-radius:8px;object-fit:cover;background:var(--bg4);flex-shrink:0}
+.player-details{flex:1;min-width:0}
+.player-title-big{font-family:var(--font2);font-size:16px;font-weight:800;margin-bottom:4px}
+.player-actions-row{display:flex;gap:8px;margin:10px 0}
+.player-act-btn{
+  padding:6px 12px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);
+  font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text2);
+}
+.player-act-btn.active{color:var(--accent);border-color:var(--accent)}
+
+/* ===== AUTH LOCK SCREEN OVERLAY ===== */
+.auth-lock-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(circle at center, #141724 0%, #07080c 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-lock-card{
+  width:100%;max-width:390px;background:#0e1017;
+  border:1px solid rgba(229,9,20,0.3);border-radius:18px;
+  padding:28px 24px;box-shadow:0 20px 50px rgba(0,0,0,.95);text-align:center;
+}
+.auth-lock-logo{
+  width:48px;height:48px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),#8b0000);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:900;color:#fff;margin:0 auto 12px;
+  box-shadow:0 0 20px var(--accent-glow);
+}
+.auth-lock-title{font-family:var(--font2);font-size:22px;font-weight:900;margin-bottom:4px}
+.auth-lock-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+.auth-toggle-row{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px}
+.auth-tbtn{flex:1;padding:10px;font-size:12px;font-weight:700;color:var(--text3);border-bottom:2px solid transparent}
+.auth-tbtn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.auth-field-row{display:flex;flex-direction:column;gap:5px;text-align:left;margin-bottom:12px}
+.auth-field-row label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase}
+.auth-input{
+  background:#161924;border:1px solid var(--border);
+  border-radius:8px;padding:11px 14px;color:var(--text);font-size:13px;outline:none;
+}
+.btn-lock-submit{
+  width:100%;padding:12px;border-radius:8px;background:var(--accent);
+  color:#fff;font-size:14px;font-weight:800;box-shadow:0 4px 14px var(--accent-glow);
+  margin-top:4px;margin-bottom:12px;
+}
+.btn-google-lock{
+  width:100%;padding:10px;border-radius:8px;background:#161924;
+  border:1px solid var(--border);color:var(--text);font-size:13px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+
+/* NOTIFICATIONS & UPDATE OVERLAYS */
+.notif-banner-popup{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9000;
+  width:90%;max-width:420px;background:#121522;border:1px solid var(--accent);
+  border-radius:12px;padding:14px 16px;box-shadow:0 12px 30px rgba(0,0,0,.85);
+  display:none;align-items:flex-start;gap:12px;animation:slideDown .3s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
+
+.force-update-overlay{
+  position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.95);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.force-update-card{
+  width:100%;max-width:380px;background:#121522;
+  border:1px solid var(--gold);border-radius:16px;padding:28px 24px;text-align:center;
+}
+
+/* TOASTS */
+.toast-wrap{
+  position:fixed;bottom:calc(var(--bottom-h) + 12px);left:50%;transform:translateX(-50%);
+  z-index:900;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;
+}
+.toast{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:9px 15px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;
+  box-shadow:0 6px 20px rgba(0,0,0,.5);animation:toastIn .2s ease;pointer-events:auto;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.toast.removing{opacity:0;transform:translateY(6px);transition:.2s}
+.toast.success i{color:#4ade80}
+.toast.error i{color:var(--accent)}
+
+/* FOOTER */
+.footer{background:var(--bg2);border-top:1px solid var(--border);padding:24px 16px;margin-top:24px}
+.footer-logo{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.footer-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:12px}
+.footer-bottom{border-top:1px solid var(--border);padding-top:12px;font-size:10px;color:var(--text3);display:flex;justify-content:space-between;gap:6px}
+
+@media(max-width:768px){
+  .nav-tabs{display:none!important}
+  .card.featured{width:150px}
+  .card.standard{width:125px}
+  .card.wide{width:200px}
+  .section-inner{padding:0 12px}
+  .player-meta-grid{flex-direction:column}
+  .player-poster{width:100%;height:auto;aspect-ratio:16/9}
+}
+@media(min-width:769px){
+  .bottom-bar{display:none!important}
+  body{padding-bottom:0}
+  .toast-wrap{bottom:20px}
+}
+</style>
 </head>
 <body oncontextmenu="return false;">
 
-  <!-- ================= NAVBAR ================= -->
-  <header class="navbar" id="navbar">
-    <div class="nav-container">
-      <div class="nav-left">
-        <a href="/" class="logo" id="logoBtn">
-          <div class="logo-badge">
-            <img src="/icons/icon-512.png" alt="MINEXUS TV" class="logo-icon-img">
-          </div>
-          <div class="logo-text">
-            MINE<span>XUS</span>
-            <span class="logo-tag">TV</span>
-          </div>
-        </a>
+<!-- ===== MANDATORY AUTH LOCK SCREEN ===== -->
+<div class="auth-lock-overlay" id="authLockOverlay" style="display:flex;">
+  <div class="auth-lock-card">
+    <div class="auth-lock-logo">M</div>
+    <h2 class="auth-lock-title">MINE<span>XUS</span> TV</h2>
+    <p class="auth-lock-sub">Sign in to stream 4K Movies, Shows & Live TV</p>
 
-        <nav class="nav-links">
-          <button class="nav-link active" data-category="all" id="navAll">
-            <i class="fas fa-compass"></i> Discover
-          </button>
-          <button class="nav-link" data-category="movies" id="navMovies">
-            <i class="fas fa-film"></i> Movies
-          </button>
-          <button class="nav-link" data-category="series" id="navSeries">
-            <i class="fas fa-tv"></i> TV Series
-          </button>
-          <button class="nav-link" data-category="trending" id="navTrending">
-            <i class="fas fa-fire"></i> Trending
-          </button>
-          <button class="nav-link" data-category="bollywood" id="navBollywood">
-            <i class="fas fa-clapperboard"></i> Bollywood
-          </button>
-          <button class="nav-link" data-category="top" id="navTop">
-            <i class="fas fa-star"></i> Top Rated
-          </button>
-          <button class="nav-link" data-category="watchlist" id="navWatchlist">
-            <i class="fas fa-bookmark"></i> Watchlist (<span id="watchlistCount">0</span>)
-          </button>
-        </nav>
+    <div class="auth-toggle-row">
+      <button class="auth-tbtn active" id="lockTabLogin">Login</button>
+      <button class="auth-tbtn" id="lockTabSignup">Register</button>
+    </div>
+
+    <div id="lockLoginForm">
+      <div class="auth-field-row">
+        <label>Email Address</label>
+        <input type="email" id="lockEmail" class="auth-input" placeholder="you@example.com" required>
+      </div>
+      <div class="auth-field-row">
+        <label>Password</label>
+        <input type="password" id="lockPassword" class="auth-input" placeholder="••••••••" required>
+      </div>
+      <button class="btn btn-lock-submit" id="lockLoginBtn"><i class="fas fa-right-to-bracket"></i> Sign In to MINEXUS</button>
+      <button class="btn-google-lock" id="lockGoogleBtn"><i class="fab fa-google" style="color:#4285f4"></i> Continue with Google</button>
+    </div>
+
+    <div id="lockSignupForm" style="display:none;">
+      <div class="auth-field-row">
+        <label>Full Name</label>
+        <input type="text" id="lockSignName" class="auth-input" placeholder="Your Name">
+      </div>
+      <div class="auth-field-row">
+        <label>Email Address</label>
+        <input type="email" id="lockSignEmail" class="auth-input" placeholder="you@example.com" required>
+      </div>
+      <div class="auth-field-row">
+        <label>Password</label>
+        <input type="password" id="lockSignPass" class="auth-input" placeholder="Min 6 characters" required>
+      </div>
+      <button class="btn btn-lock-submit" id="lockSignupBtn"><i class="fas fa-user-plus"></i> Create Account</button>
+      <button class="btn-google-lock" id="lockGoogleSignBtn"><i class="fab fa-google" style="color:#4285f4"></i> Sign Up with Google</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BROADCAST NOTIFICATION POPUP ===== -->
+<div class="notif-banner-popup" id="notifBannerPopup">
+  <div style="font-size:20px;color:var(--accent)"><i class="fas fa-bell"></i></div>
+  <div style="flex:1">
+    <strong id="notifBannerTitle" style="font-size:13px;display:block;margin-bottom:2px">Alert</strong>
+    <p id="notifBannerMsg" style="font-size:11px;color:var(--text2);margin-bottom:6px">Message text</p>
+    <button class="btn btn-primary" id="notifBannerActionBtn" style="padding:4px 10px;font-size:11px">Open Stream</button>
+  </div>
+  <button onclick="document.getElementById('notifBannerPopup').style.display='none'" style="color:var(--text3);font-size:12px"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- ===== FORCE UPDATE MODAL ===== -->
+<div class="force-update-overlay" id="forceUpdateOverlay">
+  <div class="force-update-card">
+    <div style="font-size:36px;color:var(--gold);margin-bottom:12px"><i class="fas fa-arrows-rotate fa-spin"></i></div>
+    <h2 style="font-size:18px;font-weight:900;margin-bottom:6px">App Update Available</h2>
+    <p id="forceUpdateMsg" style="font-size:12px;color:var(--text2);margin-bottom:18px">Please update MINEXUS TV to the latest version.</p>
+    <a href="#" id="forceUpdateDownloadBtn" class="btn btn-primary" style="display:inline-flex;width:100%;justify-content:center"><i class="fas fa-download"></i> Download Update</a>
+  </div>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<header class="navbar">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <div class="logo" id="logoBtn">
+        <div class="logo-icon">M</div>
+        <div><div class="logo-name">MINE<span>XUS</span></div></div>
       </div>
 
-      <div class="nav-right">
-        <div class="search-box-wrap">
-          <i class="fas fa-search search-icon"></i>
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Search movie title, series, or IMDb ID..."
-            autocomplete="off"
-            spellcheck="false"
-          >
-          <button id="searchClearBtn" class="search-clear-btn" style="display:none;">
-            <i class="fas fa-times"></i>
-          </button>
-          <div class="search-dropdown" id="searchDropdown"></div>
-        </div>
-
-        <button class="direct-id-btn" id="directPlayNavBtn" title="Direct IMDb Stream">
-          <i class="fas fa-bolt"></i>
-          <span>Direct Play</span>
-        </button>
-
-        <!-- Install App Button (shown only when installable) -->
-        <button class="install-btn" id="installBannerBtn" title="Install MINEXUS TV App" style="display:none;">
-          <i class="fas fa-download"></i>
-          <span>Install</span>
-        </button>
-
-        <!-- Logged-out: Login button -->
-        <button class="btn btn-primary btn-nav-login" id="navLoginBtn">
-          <i class="fas fa-user"></i> Login
-        </button>
-
-        <!-- Logged-in: Avatar + Menu -->
-        <div class="nav-user-area" id="navUserArea" style="display:none;">
-          <button class="user-avatar-btn" id="userAvatarBtn"></button>
-          <div class="user-menu" id="userMenu">
-            <div class="user-menu-header">
-              <strong id="userMenuName">User</strong>
-              <span id="userMenuEmail">email@example.com</span>
-            </div>
-            <div class="user-menu-stat">
-              <i class="fas fa-clapperboard"></i> Titles Watched: <strong id="userMenuWatchCount">0</strong>
-            </div>
-            <button class="user-menu-item" id="navHistoryBtn"><i class="fas fa-history"></i> Watch History</button>
-            <button class="user-menu-item logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-          </div>
-        </div>
-
-        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">
-          <i class="fas fa-bars"></i>
-        </button>
-      </div>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-view="home"><i class="fas fa-house"></i>Home</button>
+        <button class="nav-tab" data-view="movies"><i class="fas fa-film"></i>Movies</button>
+        <button class="nav-tab" data-view="series"><i class="fas fa-tv"></i>Series</button>
+        <button class="nav-tab" data-view="live"><i class="fas fa-circle" style="color:#ff3d3d;font-size:8px"></i>Live TV</button>
+        <button class="nav-tab" data-view="leaderboard"><i class="fas fa-trophy" style="color:var(--gold)"></i>Leaderboard</button>
+      </nav>
     </div>
 
-    <div class="mobile-nav" id="mobileNav">
-      <button class="mobile-nav-link active" data-category="all"><i class="fas fa-compass"></i> Discover All</button>
-      <button class="mobile-nav-link" data-category="movies"><i class="fas fa-film"></i> Movies</button>
-      <button class="mobile-nav-link" data-category="series"><i class="fas fa-tv"></i> TV Series & Shows</button>
-      <button class="mobile-nav-link" data-category="trending"><i class="fas fa-fire"></i> Trending Now</button>
-      <button class="mobile-nav-link" data-category="bollywood"><i class="fas fa-clapperboard"></i> Bollywood / Hindi</button>
-      <button class="mobile-nav-link" data-category="top"><i class="fas fa-star"></i> Top Rated IMDb</button>
-      <button class="mobile-nav-link" data-category="watchlist"><i class="fas fa-bookmark"></i> My Watchlist</button>
+    <div class="nav-right">
+      <button class="nav-badge-btn" onclick="switchView('leaderboard')">
+        <i class="fas fa-crown"></i> <span id="navRankPill">#1 Rank</span>
+      </button>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- ================= HERO SPOTLIGHT BANNER ================= -->
-  <section class="hero-section" id="heroSection">
-    <div class="hero-backdrop-container">
-      <div class="hero-backdrop" id="heroBackdrop"></div>
-      <div class="hero-gradient-overlay"></div>
+<!-- ===== HOME VIEW ===== -->
+<div class="view active" id="viewHome">
+  <!-- SEARCH BAR (BELOW HEADER) -->
+  <div class="mobile-search-row">
+    <div class="search-box-container">
+      <i class="fas fa-search search-box-icon"></i>
+      <input type="text" class="search-box-input" id="homeSearchInput" placeholder="Search Pakistani, Indian, 4K Movies & Shows..." autocomplete="off">
+      <button class="search-box-clear" id="homeSearchClear"><i class="fas fa-times"></i></button>
+      <div class="search-dropdown" id="homeSearchDropdown"></div>
     </div>
+  </div>
 
+  <!-- HERO SPOTLIGHT -->
+  <section class="hero" id="heroSection" style="margin-top:10px">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-side-fade"></div>
     <div class="hero-content">
-      <div class="hero-badge-row">
-        <span class="hero-pill-badge" id="heroPill">🔥 FEATURED SPOTLIGHT</span>
-        <span class="hero-type-badge" id="heroTypeBadge">MOVIE</span>
-        <span class="hero-quality-badge">4K ULTRA HD</span>
-        <span class="hero-imdb-badge" id="heroImdbRating">
-          <i class="fas fa-star"></i> <span id="heroRatingVal">—</span>
-        </span>
+      <div class="hero-badges" id="heroBadges">
+        <span class="badge badge-accent">🔥 SPOTLIGHT</span>
+        <span class="badge badge-gold"><i class="fas fa-star"></i> <span id="heroRating">—</span></span>
+        <span class="badge badge-outline" id="heroTypeBadge">MOVIE</span>
       </div>
-
-      <h1 class="hero-title" id="heroTitle">Loading MINEXUS TV...</h1>
-
-      <div class="hero-meta-row" id="heroMeta">
-        <span id="heroYear"></span>
-        <span class="meta-dot">•</span>
-        <span id="heroRuntime"></span>
-        <span class="meta-dot">•</span>
-        <span id="heroGenres"></span>
+      <h1 class="hero-title" id="heroTitle">MINEXUS Cinema 4K</h1>
+      <div class="hero-meta" id="heroMeta">
+        <span id="heroYear">2024</span>
+        <span class="dot">•</span>
+        <span id="heroRuntime">Multi-Server</span>
+        <span class="dot">•</span>
+        <span id="heroGenre">Cinema</span>
       </div>
-
-      <p class="hero-synopsis" id="heroSynopsis">
-        Fetching the latest live catalog from IMDb...
-      </p>
-
-      <div class="hero-actions">
-        <button class="btn btn-primary" id="heroPlayBtn">
-          <i class="fas fa-play"></i> Watch Now
-        </button>
-        <button class="btn btn-secondary" id="heroInfoBtn">
-          <i class="fas fa-info-circle"></i> Info & Details
-        </button>
-        <button class="btn btn-icon" id="heroWatchlistBtn" title="Add to Watchlist">
-          <i class="far fa-bookmark"></i>
-        </button>
+      <p class="hero-synopsis" id="heroSynopsis">Instant 4K Streaming on MINEXUS TV.</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" id="heroPlayBtn"><i class="fas fa-play"></i> Watch Now</button>
+        <button class="btn btn-secondary" id="heroWlBtn"><i class="far fa-bookmark"></i> Save</button>
+        <button class="btn-icon" id="heroLikeBtn" title="Like"><i class="far fa-heart"></i></button>
       </div>
     </div>
-
-    <div class="hero-indicators" id="heroIndicators"></div>
+    <div class="hero-dots" id="heroDots"></div>
   </section>
 
-  <!-- ================= DIRECT PLAY & QUICK LAUNCH BAR ================= -->
-  <section class="direct-launcher-section">
-    <div class="section-container">
-      <div class="direct-launcher-card">
-        <div class="launcher-left">
-          <div class="launcher-icon">
-            <i class="fas fa-play"></i>
-          </div>
-          <div class="launcher-text">
-            <h3>Instant MINEXUS Cinema Launcher</h3>
-            <p>Paste any IMDb ID (e.g. <code>tt1375666</code>, <code>tt0816692</code>) to stream immediately</p>
-          </div>
-        </div>
-
-        <form class="launcher-form" id="directPlayForm">
-          <div class="launcher-input-box">
-            <i class="fas fa-film"></i>
-            <input
-              type="text"
-              id="directImdbInput"
-              placeholder="Enter IMDb ID (e.g. tt1375666 or 1375666)..."
-              required
-            >
-          </div>
-          <button type="submit" class="btn btn-primary btn-launcher">
-            <i class="fas fa-play"></i> Play Now
-          </button>
-        </form>
+  <!-- DIRECT PLAY BAR -->
+  <section>
+    <div class="direct-bar">
+      <div class="direct-bar-title"><i class="fas fa-bolt"></i> Instant IMDb Streamer (MultiEmbed Default)</div>
+      <div class="direct-form">
+        <input type="text" class="direct-input" id="directInput" placeholder="Enter IMDb ID (e.g. tt1375666)...">
+        <button class="btn-direct" id="directPlayBtn"><i class="fas fa-play"></i> Stream</button>
       </div>
-
-      <div class="preset-chips-row">
-        <span class="preset-label"><i class="fas fa-fire"></i> Fast Picks:</span>
-        <button class="chip-btn" data-imdb="tt1375666"><i class="fas fa-film"></i> Inception</button>
-        <button class="chip-btn" data-imdb="tt0816692"><i class="fas fa-film"></i> Interstellar</button>
-        <button class="chip-btn" data-imdb="tt0468569"><i class="fas fa-film"></i> The Dark Knight</button>
-        <button class="chip-btn" data-imdb="tt15398776"><i class="fas fa-film"></i> Oppenheimer</button>
-        <button class="chip-btn" data-imdb="tt15239678"><i class="fas fa-film"></i> Dune 2</button>
-        <button class="chip-btn" data-imdb="tt0903747"><i class="fas fa-tv"></i> Breaking Bad</button>
-        <button class="chip-btn" data-imdb="tt4574334"><i class="fas fa-tv"></i> Stranger Things</button>
-        <button class="chip-btn" data-imdb="tt6473300"><i class="fas fa-tv"></i> Mirzapur</button>
+      <div class="chips-row">
+        <button class="chip" data-imdb="tt1375666">Inception</button>
+        <button class="chip" data-imdb="tt0816692">Interstellar</button>
+        <button class="chip" data-imdb="tt0468569">Dark Knight</button>
+        <button class="chip" data-imdb="tt15398776">Oppenheimer</button>
+        <button class="chip" data-imdb="tt15354916">Jawan</button>
+        <button class="chip" data-imdb="tt0903747">Breaking Bad</button>
+        <button class="chip" data-imdb="tt6473300">Mirzapur</button>
+        <button class="chip" data-imdb="tt10333202">Maula Jatt</button>
       </div>
     </div>
   </section>
 
-  <!-- ================= CATEGORY FILTER TABS ================= -->
-  <section class="filters-section">
-    <div class="section-container">
-      <div class="filter-pills-wrap" id="filterPillsWrap">
-        <button class="filter-pill active" data-filter="all"><i class="fas fa-globe"></i> All</button>
-        <button class="filter-pill" data-filter="movies"><i class="fas fa-film"></i> Movies</button>
-        <button class="filter-pill" data-filter="series"><i class="fas fa-tv"></i> Web Series</button>
-        <button class="filter-pill" data-filter="trending"><i class="fas fa-fire"></i> Trending</button>
-        <button class="filter-pill" data-filter="bollywood"><i class="fas fa-clapperboard"></i> Bollywood</button>
-        <button class="filter-pill" data-filter="top"><i class="fas fa-star"></i> Top Rated</button>
-        <button class="filter-pill" data-filter="watchlist"><i class="fas fa-bookmark"></i> Watchlist</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= PERSONALIZED "RECOMMENDED FOR YOU" ================= -->
-  <section class="personalized-section" id="personalizedSection" style="display:none;">
-    <div class="section-container">
+  <!-- TRENDING ROW -->
+  <section class="section">
+    <div class="section-inner">
       <div class="section-header">
-        <div>
-          <h2 class="section-heading"><i class="fas fa-wand-magic-sparkles"></i> Recommended For You</h2>
-          <p class="section-subheading" id="personalizedSubtext">Based on what you've been watching</p>
-        </div>
+        <h2 class="section-title"><span class="accent">🔥</span> Trending Blockbusters</h2>
+        <button class="see-all" data-view="movies">See All</button>
       </div>
-      <div class="movie-grid personalized-grid" id="personalizedRow"></div>
+      <div class="h-scroll" id="trendingRow"></div>
     </div>
   </section>
 
-  <!-- ================= MAIN CONTENT & CATALOG ================= -->
-  <main class="main-content">
-    <div class="section-container">
-
+  <!-- BOLLYWOOD & DESI CINEMA -->
+  <section class="section">
+    <div class="section-inner">
       <div class="section-header">
-        <div>
-          <h2 class="section-heading" id="sectionHeading">🧭 Discover MINEXUS TV</h2>
-          <p class="section-subheading" id="sectionSubtext">Live IMDb catalog — movies & series in Ultra HD.</p>
-        </div>
-        <div class="catalog-controls">
-          <span class="movie-count-badge" id="movieCountBadge">Loading titles...</span>
-        </div>
+        <h2 class="section-title"><span class="accent">🎬</span> Pakistani & Indian Cinema</h2>
+        <button class="see-all" data-filter="bollywood" data-view="movies">See All</button>
       </div>
-
-      <div class="movie-grid" id="movieGrid"></div>
-
-      <div class="catalog-loader" id="catalogLoader" style="display:none;">
-        <div class="spinner"></div><span>Loading live titles from IMDb...</span>
-      </div>
-
-      <div class="load-more-wrap">
-        <button class="btn btn-secondary" id="loadMoreBtn"><i class="fas fa-plus"></i> Load More Titles</button>
-      </div>
-
-      <div class="empty-state" id="emptyState" style="display:none;">
-        <i class="fas fa-film-slash empty-icon"></i>
-        <h3>No Titles Found</h3>
-        <p>We couldn't find any movie or series matching your criteria. Try searching another title or IMDb ID.</p>
-        <button class="btn btn-primary" id="resetFiltersBtn"><i class="fas fa-undo"></i> Reset Filters</button>
-      </div>
-
+      <div class="h-scroll" id="bollywoodRow"></div>
     </div>
-  </main>
+  </section>
 
-  <!-- ================= CINEMA VIDEO PLAYER MODAL ================= -->
-  <div class="player-modal" id="playerModal" role="dialog" aria-modal="true">
-    <div class="player-modal-backdrop" id="playerModalBackdrop"></div>
-
-    <div class="player-modal-container">
-      <div class="player-modal-header">
-        <div class="player-title-info">
-          <span class="player-live-badge"><i class="fas fa-circle"></i> MINEXUS PRO STREAM</span>
-          <h2 class="player-movie-title" id="playerMovieTitle">Movie Title</h2>
-        </div>
-
-        <div class="player-modal-actions">
-          <button class="player-action-btn" id="theaterModeBtn" title="Toggle Theater Mode">
-            <i class="fas fa-expand-arrows-alt"></i>
-          </button>
-          <button class="player-action-btn" id="shareMovieBtn" title="Share Stream Link">
-            <i class="fas fa-share-alt"></i>
-          </button>
-          <button class="player-action-btn" id="playerWatchlistToggle" title="Save to Watchlist">
-            <i class="far fa-bookmark"></i>
-          </button>
-          <button class="player-close-btn" id="closePlayerBtn" title="Close Player (Esc)">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
+  <!-- TOP WEB SERIES -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-header">
+        <h2 class="section-title"><span class="accent">📺</span> Top Web Series</h2>
+        <button class="see-all" data-view="series">See All</button>
       </div>
-
-      <div class="player-server-selector">
-        <div class="server-label"><i class="fas fa-server"></i> MINEXUS Cinema Server:</div>
-        <div class="server-buttons-wrap" id="serverButtonsWrap">
-          <button class="server-btn active" data-server="server1"><i class="fas fa-star"></i> Server 1 (Ultra HD Fast)</button>
-          <button class="server-btn" data-server="server2"><i class="fas fa-bolt"></i> Server 2 (High Speed)</button>
-          <button class="server-btn" data-server="server3"><i class="fas fa-play"></i> Server 3 (Cloud Multi)</button>
-          <button class="server-btn" data-server="server4"><i class="fas fa-shield-halved"></i> Server 4 (4K Stream)</button>
-          <button class="server-btn" data-server="server5"><i class="fas fa-globe"></i> Server 5 (Backup Engine)</button>
-        </div>
-      </div>
-
-      <div class="video-frame-container" id="videoFrameContainer">
-        <div class="video-loader" id="videoLoader">
-          <div class="spinner"></div>
-          <span>Connecting to MINEXUS Ultra Stream...</span>
-        </div>
-        <iframe
-          id="cinemaIframe"
-          src=""
-          title="MINEXUS TV Cinema Player"
-          allowfullscreen
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; display-capture; screen-wake-lock"
-          referrerpolicy="no-referrer"
-        ></iframe>
-      </div>
-
-      <div class="series-controls-section" id="seriesControlsSection" style="display:none;">
-        <div class="series-controls-header">
-          <div class="season-select-wrap">
-            <label for="seasonSelect"><i class="fas fa-list-ol"></i> Season:</label>
-            <select id="seasonSelect" class="season-dropdown"></select>
-          </div>
-          <div class="episode-nav-btns">
-            <button class="btn btn-sm btn-secondary" id="prevEpisodeBtn"><i class="fas fa-backward-step"></i> Prev Ep</button>
-            <span class="current-ep-pill" id="currentEpPill">S1: E1</span>
-            <button class="btn btn-sm btn-primary" id="nextEpisodeBtn">Next Ep <i class="fas fa-forward-step"></i></button>
-          </div>
-        </div>
-
-        <div class="episodes-grid-wrap">
-          <div class="episodes-title"><i class="fas fa-tv"></i> Select Episode:</div>
-          <div class="episodes-grid" id="episodesGrid"></div>
-        </div>
-      </div>
-
-      <div class="player-server-bar">
-        <div class="server-status">
-          <i class="fas fa-check-circle"></i>
-          <span id="activeServerStatus">Active: MINEXUS Server 1</span>
-        </div>
-        <div class="player-tips">
-          <i class="fas fa-circle-play"></i> Click play inside the video player to start streaming.
-        </div>
-      </div>
-
-      <div class="player-meta-section" id="playerMetaSection">
-        <div class="player-details-grid">
-          <div class="player-poster-wrap">
-            <img src="" alt="" id="playerPosterImg" class="player-poster-img">
-          </div>
-          <div class="player-info-details">
-            <div class="player-tags-row" id="playerTagsRow"></div>
-            <p class="player-description" id="playerDescription"></p>
-            <div class="player-specs-grid" id="playerSpecsGrid"></div>
-          </div>
-        </div>
-
-        <div class="player-recommendations">
-          <h3><i class="fas fa-sparkles"></i> More Like This</h3>
-          <div class="recommendations-row" id="recommendationsRow"></div>
-        </div>
-      </div>
-
+      <div class="h-scroll" id="seriesRow"></div>
     </div>
-  </div>
+  </section>
 
-  <!-- ================= PREVIEW / INFO MODAL ================= -->
-  <div class="info-modal" id="infoModal">
-    <div class="info-modal-backdrop" id="infoModalBackdrop"></div>
-    <div class="info-modal-card">
-      <button class="info-modal-close" id="infoModalClose"><i class="fas fa-times"></i></button>
-
-      <div class="info-modal-banner">
-        <img src="" id="infoBannerImg" alt="Backdrop">
-        <div class="info-banner-overlay"></div>
-        <div class="info-banner-content">
-          <span class="info-imdb-pill" id="infoRatingPill"><i class="fas fa-star"></i> —</span>
-          <span class="hero-type-badge" id="infoTypeBadge">MOVIE</span>
-          <h2 id="infoTitle">Title</h2>
-          <div class="info-meta" id="infoMetaRow"></div>
-        </div>
+  <!-- LIVE TV PREVIEW -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-header">
+        <h2 class="section-title"><span class="live-dot" style="margin-right:6px"></span> Live Channels</h2>
+        <button class="see-all" data-view="live">See All</button>
       </div>
-
-      <div class="info-modal-body">
-        <p class="info-plot" id="infoPlot">Plot summary...</p>
-        <div class="info-details-table" id="infoDetailsTable"></div>
-
-        <div class="info-actions">
-          <button class="btn btn-primary btn-lg" id="infoPlayNowBtn"><i class="fas fa-play"></i> Watch Now</button>
-          <button class="btn btn-secondary" id="infoWatchlistBtn"><i class="far fa-bookmark"></i> Watchlist</button>
-        </div>
-      </div>
+      <div class="h-scroll" id="livePrevRow"></div>
     </div>
-  </div>
+  </section>
 
-  <!-- ================= AUTH MODAL (Netflix-style Login/Signup) ================= -->
-  <div class="auth-modal" id="authModal">
-    <div class="auth-modal-backdrop" id="authModalBackdrop"></div>
-    <div class="auth-modal-card">
-      <button class="auth-modal-close" id="authModalClose"><i class="fas fa-times"></i></button>
-
-      <div class="auth-modal-brand">
-        <img src="/icons/icon-512.png" alt="MINEXUS TV">
-        <h2>MINEXUS <span>TV</span></h2>
-      </div>
-
-      <p class="auth-gate-note" id="authGateNote" style="display:none;"></p>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="authTabLogin">Login</button>
-        <button class="auth-tab" id="authTabSignup">Sign Up</button>
-      </div>
-
-      <div class="auth-error" id="authError" style="display:none;"></div>
-
-      <!-- Login Form -->
-      <form class="auth-form" id="loginForm" style="display:flex;">
-        <label>Email
-          <input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
-        </label>
-        <label>Password
-          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
-        </label>
-        <a href="#" class="forgot-link" id="forgotPasswordLink">Forgot Password?</a>
-        <button type="submit" class="btn btn-primary btn-auth-submit" id="loginSubmitBtn">
-          <i class="fas fa-right-to-bracket"></i> Login
-        </button>
-        <div class="auth-divider"><span>or</span></div>
-        <button type="button" class="btn btn-google" id="googleSignInBtn">
-          <i class="fab fa-google"></i> Continue with Google
-        </button>
-      </form>
-
-      <!-- Signup Form -->
-      <form class="auth-form" id="signupForm" style="display:none;">
-        <label>Full Name
-          <input type="text" id="signupName" placeholder="Your Name" required autocomplete="name">
-        </label>
-        <label>Email
-          <input type="email" id="signupEmail" placeholder="you@example.com" required autocomplete="email">
-        </label>
-        <label>Password
-          <input type="password" id="signupPassword" placeholder="At least 6 characters" required autocomplete="new-password">
-        </label>
-        <button type="submit" class="btn btn-primary btn-auth-submit" id="signupSubmitBtn">
-          <i class="fas fa-user-plus"></i> Create Account
-        </button>
-        <div class="auth-divider"><span>or</span></div>
-        <button type="button" class="btn btn-google" id="googleSignUpBtn">
-          <i class="fab fa-google"></i> Sign Up with Google
-        </button>
-      </form>
+  <footer class="footer">
+    <div class="footer-logo logo">
+      <div class="logo-icon">M</div>
+      <div class="logo-name">MINE<span>XUS</span> TV</div>
     </div>
-  </div>
-
-  <!-- ================= MOBILE BOTTOM TAB BAR ================= -->
-  <nav class="bottom-tab-bar" id="bottomTabBar">
-    <button class="tab-btn active" data-tab="home" id="tabHome">
-      <i class="fas fa-house"></i>
-      <span>Home</span>
-    </button>
-    <button class="tab-btn" data-tab="movies" id="tabMovies">
-      <i class="fas fa-film"></i>
-      <span>Movies</span>
-    </button>
-    <button class="tab-btn" data-tab="series" id="tabSeries">
-      <i class="fas fa-tv"></i>
-      <span>Series</span>
-    </button>
-    <button class="tab-btn" data-tab="search" id="tabSearch">
-      <i class="fas fa-search"></i>
-      <span>Search</span>
-    </button>
-    <button class="tab-btn" data-tab="account" id="tabAccount">
-      <i class="fas fa-circle-user"></i>
-      <span>Account</span>
-    </button>
-  </nav>
-
-  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
-  <div class="toast-container" id="toastContainer"></div>
-
-  <!-- ================= FOOTER ================= -->
-  <footer class="site-footer">
-    <div class="section-container footer-grid">
-      <div class="footer-col brand-col">
-        <div class="logo">
-          <div class="logo-badge"><img src="/icons/icon-512.png" alt="MINEXUS TV" class="logo-icon-img"></div>
-          <div class="logo-text">MINE<span>XUS</span> TV</div>
-        </div>
-        <p class="footer-desc">
-          The ultimate cinema and web series streaming platform. Watch all movies and TV shows in 4K Ultra HD, live from IMDb.
-        </p>
-        <div class="footer-socials">
-          <a href="https://t.me/minexustv" target="_blank" rel="noopener" class="social-link" title="Telegram">
-            <i class="fab fa-telegram"></i>
-          </a>
-          <a href="#" class="social-link" title="Share MINEXUS TV" id="footerShareBtn">
-            <i class="fas fa-share-nodes"></i>
-          </a>
-        </div>
-      </div>
-
-      <div class="footer-col">
-        <h4>Explore Categories</h4>
-        <ul>
-          <li><a href="#" data-filter="movies">Movies Hub</a></li>
-          <li><a href="#" data-filter="series">TV & Web Series</a></li>
-          <li><a href="#" data-filter="bollywood">Bollywood / Hindi</a></li>
-          <li><a href="#" data-filter="trending">Trending Now</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Stream Servers</h4>
-        <ul>
-          <li><span>⭐ Server 1 (Ultra HD Fast)</span></li>
-          <li><span>⚡ Server 2 (High Speed)</span></li>
-          <li><span>⚡ Server 3 (Cloud Multi)</span></li>
-          <li><span>⚡ Server 4 (4K Stream)</span></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>About & Privacy</h4>
-        <p class="footer-disclaimer">MINEXUS TV — Protected & Encrypted Streaming Platform.</p>
-        <div class="footer-status-pill"><span class="status-dot"></span> MINEXUS Engine Online • 2026</div>
-      </div>
-    </div>
-
+    <p class="footer-desc">MINEXUS TV — 4K Cinema, Web Series & Live TV. MultiEmbed Cloud Engine.</p>
     <div class="footer-bottom">
-      <div class="section-container footer-bottom-flex">
-        <span>© 2026 <strong>MINEXUS TV</strong>. All rights reserved.</span>
-        <span class="developer-credit">Developed with ❤️ by <strong>Muaaz Iqbal</strong></span>
-      </div>
+      <span>© 2026 MINEXUS TV</span>
+      <span>Official Cinema Engine</span>
     </div>
   </footer>
+</div>
 
-  <!-- Firebase + App Modules -->
-  <script src="/js/firebase-init.js"></script>
-  <script src="/js/db.js"></script>
-  <script src="/js/cinemeta-api.js"></script>
-  <script src="/js/app.js"></script>
-  <script>
-    // Login button opens the auth modal directly
-    document.getElementById('navLoginBtn').addEventListener('click', function () {
-      document.getElementById('authModal').classList.add('active');
-      document.body.style.overflow = 'hidden';
-      document.getElementById('authGateNote').style.display = 'none';
+<!-- ===== MOVIES VIEW ===== -->
+<div class="view" id="viewMovies">
+  <div style="padding:14px 0 0">
+    <div class="section-inner">
+      <h2 class="section-title" style="margin-bottom:2px"><span class="accent">🎬</span> Movies Catalog</h2>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Stream in 4K Multi-Server</p>
+    </div>
+    <div class="filter-row" id="moviesFilterRow">
+      <button class="filter-pill active" data-filter="all">All</button>
+      <button class="filter-pill" data-filter="trending">Trending</button>
+      <button class="filter-pill" data-filter="top">Top Rated</button>
+      <button class="filter-pill" data-filter="bollywood">Pakistani / Indian</button>
+      <button class="filter-pill" data-filter="action">Action</button>
+      <button class="filter-pill" data-filter="drama">Drama</button>
+      <button class="filter-pill" data-filter="comedy">Comedy</button>
+      <button class="filter-pill" data-filter="sci-fi">Sci-Fi</button>
+    </div>
+    <div class="section-inner" style="margin-top:16px">
+      <div class="grid" id="moviesGrid"></div>
+      <div class="load-more-wrap" id="moviesLoadMoreWrap" style="text-align:center;padding:16px">
+        <button class="btn btn-secondary" id="moviesLoadMoreBtn"><i class="fas fa-plus"></i> Load More</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SERIES VIEW ===== -->
+<div class="view" id="viewSeries">
+  <div style="padding:14px 0 0">
+    <div class="section-inner">
+      <h2 class="section-title" style="margin-bottom:2px"><span class="accent">📺</span> Web Series & Shows</h2>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:10px">All seasons & episodes</p>
+    </div>
+    <div class="filter-row" id="seriesFilterRow">
+      <button class="filter-pill active" data-filter="all">All</button>
+      <button class="filter-pill" data-filter="trending">Trending</button>
+      <button class="filter-pill" data-filter="top">Top Rated</button>
+      <button class="filter-pill" data-filter="action">Action</button>
+      <button class="filter-pill" data-filter="crime">Crime</button>
+      <button class="filter-pill" data-filter="sci-fi">Sci-Fi</button>
+    </div>
+    <div class="section-inner" style="margin-top:16px">
+      <div class="grid" id="seriesGrid"></div>
+      <div class="load-more-wrap" id="seriesLoadMoreWrap" style="text-align:center;padding:16px">
+        <button class="btn btn-secondary" id="seriesLoadMoreBtn"><i class="fas fa-plus"></i> Load More</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LIVE TV VIEW ===== -->
+<div class="view" id="viewLive">
+  <div class="live-header">
+    <div class="live-title"><div class="live-dot"></div> Live TV Streams</div>
+    <p class="live-sub">Live Sports, News & World Broadcasts</p>
+  </div>
+  <div class="country-tabs" id="countryTabs">
+    <button class="country-tab active" data-country="PK">🇵🇰 Pakistan</button>
+    <button class="country-tab" data-country="IN">🇮🇳 India</button>
+    <button class="country-tab" data-country="AE">🇦🇪 UAE</button>
+    <button class="country-tab" data-country="GB">🇬🇧 UK</button>
+    <button class="country-tab" data-country="US">🇺🇸 USA</button>
+    <button class="country-tab" data-country="WORLD">🌐 Custom / Sports</button>
+  </div>
+  <div id="channelsGrid" class="channels-grid"></div>
+</div>
+
+<!-- ===== LEADERBOARD VIEW (TOP STREAMERS DASHBOARD) ===== -->
+<div class="view" id="viewLeaderboard">
+  <div class="leaderboard-wrap">
+    <div class="leaderboard-hero">
+      <div class="leaderboard-title"><i class="fas fa-trophy" style="color:var(--gold)"></i> Community Leaderboard</div>
+      <p style="font-size:12px;color:var(--text2)">Top users who watched the most content & streams</p>
+
+      <div class="leader-podium" id="leaderPodium">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <h3 style="font-size:14px;font-weight:800;margin-bottom:10px"><i class="fas fa-ranking-star" style="color:var(--cyan)"></i> Global Rankings</h3>
+    <div class="leader-list" id="leaderboardList">
+      <div style="text-align:center;padding:20px;color:var(--text3)">Loading leaderboard...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== USER ACCOUNT VIEW ===== -->
+<div class="view" id="viewAccount">
+  <div class="account-view">
+    <div class="account-card">
+      <div class="acc-header-flex">
+        <div class="acc-avatar" id="accAvatar">M</div>
+        <div>
+          <div class="acc-name" id="accName">Member</div>
+          <span class="acc-badge"><i class="fas fa-crown"></i> VIP PRO STREAMER</span>
+        </div>
+      </div>
+      <div class="acc-stats-row">
+        <div class="acc-stat-box"><strong id="accWatchCount">0</strong><span>Watched</span></div>
+        <div class="acc-stat-box"><strong id="accWlCount">0</strong><span>Watchlist</span></div>
+        <div class="acc-stat-box"><strong id="accLikeCount">0</strong><span>Liked</span></div>
+      </div>
+    </div>
+
+    <!-- Account Sub-tabs -->
+    <div class="acc-sub-tabs" id="accSubTabs">
+      <button class="acc-stab active" data-sub="history"><i class="fas fa-history"></i> Watch History</button>
+      <button class="acc-stab" data-sub="watchlist"><i class="fas fa-bookmark"></i> My Watchlist</button>
+      <button class="acc-stab" data-sub="likes"><i class="fas fa-heart"></i> Liked Movies</button>
+      <button class="acc-stab" data-sub="searches"><i class="fas fa-search"></i> Searches</button>
+    </div>
+
+    <div id="accTabContent" class="acc-list-grid"></div>
+
+    <div style="margin-top:20px">
+      <button class="btn btn-secondary" id="accountLogoutBtn" style="width:100%;justify-content:center;color:#ff6b6b">
+        <i class="fas fa-sign-out-alt"></i> Sign Out of Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SEARCH VIEW ===== -->
+<div class="view" id="viewSearch">
+  <div style="padding:14px 16px">
+    <input type="text" class="search-box-input" id="searchViewInput" placeholder="Search by title, actor, or IMDb ID..." autocomplete="off">
+  </div>
+  <div id="searchResultsContainer" style="padding:0 16px 20px"></div>
+</div>
+
+<!-- ===== CINEMA VIDEO PLAYER VIEW ===== -->
+<div class="view" id="viewPlayer">
+  <div class="player-topbar">
+    <button class="player-back" id="playerBackBtn"><i class="fas fa-arrow-left"></i></button>
+    <div class="player-topbar-info">
+      <div class="player-topbar-title" id="playerTopTitle">—</div>
+      <div class="player-topbar-meta">MINEXUS MULTI-SERVER 4K</div>
+    </div>
+  </div>
+
+  <div class="player-frame-wrap">
+    <div class="player-loader" id="playerLoader">
+      <div class="spinner"></div>
+      <span>Connecting to Multi-Server Stream...</span>
+    </div>
+    <iframe id="cinemaFrame" src="" title="MINEXUS Cinema Player" allowfullscreen
+      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; screen-wake-lock; display-capture"></iframe>
+  </div>
+
+  <!-- All Servers Bar (MultiEmbed Default #1) -->
+  <div class="server-section">
+    <div class="server-label"><i class="fas fa-server"></i> Active Stream Server:</div>
+    <div class="servers-row" id="serversRow">
+      <button class="srv-btn active" data-server="server1"><i class="fas fa-star"></i> Server 1 MultiEmbed (Default)</button>
+      <button class="srv-btn" data-server="server2"><i class="fas fa-bolt"></i> Server 2 AutoEmbed</button>
+      <button class="srv-btn" data-server="server3"><i class="fas fa-cloud"></i> Server 3 VidLink</button>
+      <button class="srv-btn" data-server="server4"><i class="fas fa-shield-halved"></i> Server 4 Kriss424</button>
+      <button class="srv-btn" data-server="server5"><i class="fas fa-play"></i> Server 5 VidSrc</button>
+      <button class="srv-btn" data-server="server6"><i class="fas fa-film"></i> Server 6 Smashy</button>
+      <button class="srv-btn" data-server="server7"><i class="fas fa-globe"></i> Server 7 2Embed</button>
+    </div>
+  </div>
+
+  <!-- Series Episode Bar -->
+  <div class="episodes-section" id="episodesSection" style="display:none">
+    <div class="season-row">
+      <label style="font-size:11px;color:var(--text3);font-weight:700">Season:</label>
+      <select class="season-select" id="seasonSelect"></select>
+      <div class="ep-nav" style="margin-left:auto">
+        <button class="ep-nav-btn" id="prevEpBtn"><i class="fas fa-backward-step"></i></button>
+        <span class="cur-ep-badge" id="curEpBadge">S1:E1</span>
+        <button class="ep-nav-btn" id="nextEpBtn"><i class="fas fa-forward-step"></i></button>
+      </div>
+    </div>
+    <div class="episodes-scroll" id="episodesScroll"></div>
+  </div>
+
+  <!-- Movie Details & Interactive Buttons -->
+  <div class="player-meta">
+    <div class="player-meta-grid">
+      <img class="player-poster" id="playerPoster" src="" alt="">
+      <div class="player-details">
+        <h2 class="player-title-big" id="playerTitleBig">—</h2>
+        <div class="player-actions-row">
+          <button class="player-act-btn" id="playerWlBtn"><i class="far fa-bookmark"></i> Watchlist</button>
+          <button class="player-act-btn" id="playerLikeBtn"><i class="far fa-heart"></i> Like</button>
+        </div>
+        <p class="player-desc" id="playerDesc"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LIVE CHANNEL PLAYER VIEW ===== -->
+<div class="view" id="viewLivePlayer">
+  <div class="player-topbar">
+    <button class="player-back" id="livePlayerBack"><i class="fas fa-arrow-left"></i></button>
+    <div class="player-topbar-info">
+      <div class="player-topbar-title" id="livePlayerTitle">—</div>
+      <div class="player-topbar-meta">MINEXUS LIVE TV STREAM</div>
+    </div>
+    <div class="badge badge-accent" style="display:flex;align-items:center;gap:4px">
+      <span class="live-dot" style="width:6px;height:6px;background:#fff"></span> LIVE
+    </div>
+  </div>
+
+  <div class="player-frame-wrap">
+    <div class="player-loader" id="livePlayerLoader">
+      <div class="spinner"></div>
+      <span>Connecting to Live Stream...</span>
+    </div>
+    <video id="liveVideoPlayer" controls autoplay playsinline style="width:100%;height:100%;background:#000"></video>
+  </div>
+
+  <div style="padding:14px">
+    <div class="live-channel-meta" id="liveChMeta" style="display:flex;align-items:center;gap:10px;margin-bottom:8px"></div>
+    <p style="font-size:11px;color:var(--text3)">If this channel is buffering, choose another channel from the list.</p>
+  </div>
+</div>
+
+<!-- ===== BOTTOM TAB BAR (WITH ACCOUNT TAB) ===== -->
+<nav class="bottom-bar" id="bottomBar">
+  <button class="tab-btn active" data-view="home">
+    <i class="fas fa-house"></i><span>Home</span>
+  </button>
+  <button class="tab-btn" data-view="movies">
+    <i class="fas fa-film"></i><span>Movies</span>
+  </button>
+  <button class="tab-btn" data-view="series">
+    <i class="fas fa-tv"></i><span>Series</span>
+  </button>
+  <button class="tab-btn" data-view="live">
+    <i class="fas fa-broadcast-tower"></i><span>Live TV</span>
+  </button>
+  <button class="tab-btn" data-view="leaderboard">
+    <i class="fas fa-trophy"></i><span>Ranks</span>
+  </button>
+  <button class="tab-btn" data-view="account">
+    <i class="fas fa-circle-user"></i><span>Account</span>
+  </button>
+</nav>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ===== FIREBASE SDK ===== -->
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCe9EAy36fx3RHy_cHOKP9BG8F_zkkTd4c",
+  authDomain: "minexustv-a23ba.firebaseapp.com",
+  databaseURL: "https://minexustv-a23ba-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "minexustv-a23ba",
+  storageBucket: "minexustv-a23ba.firebasestorage.app",
+  messagingSenderId: "33081080111",
+  appId: "1:33081080111:web:cd23b4fe22c0b7c18e09da",
+  measurementId: "G-CRYG4T0FDT"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+</script>
+
+<script>
+'use strict';
+
+/* ---- SECURITY & ANTI-INSPECT PROTECTION ---- */
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && ['U','S'].includes(e.key.toUpperCase()))) {
+    e.preventDefault();
+  }
+});
+
+/* ---- MULTI-SERVER STREAMING ENGINES (BASE64 OBFUSCATED FOR PRIVACY) ---- */
+// MultiEmbed is Default #1 (Best for Pakistani, Indian, Asian, & Hollywood movies)
+const _s1 = atob('aHR0cHM6Ly9tdWx0aWVtYmVkLm1vdi8/dmlkZW9faWQ9'); // https://multiembed.mov/?video_id=
+const _s2 = atob('aHR0cHM6Ly9wbGF5ZXIuYXV0b2VtYmVkLmNjL2VtYmVkLw=='); // https://player.autoembed.cc/embed/
+const _s3 = atob('aHR0cHM6Ly92aWRsaW5rLnByby8='); // https://vidlink.pro/
+const _s4 = atob('aHR0cHM6Ly9rcmlzczQyNGRpZC5jb20vcGxheS8='); // https://kriss424did.com/play/
+const _s5 = atob('aHR0cHM6Ly92aWRzcmMuaWN1L2VtYmVkLw=='); // https://vidsrc.icu/embed/
+const _s6 = atob('aHR0cHM6Ly9wbGF5ZXIuc21hc2h5c3RyZWFtLmNvbS8='); // https://player.smashystream.com/
+const _s7 = atob('aHR0cHM6Ly93d3cuMmVtYmVkLmNjL2VtYmVkdHYv'); // https://www.2embed.cc/embedtv/
+
+const SERVERS = {
+  server1: {
+    name: 'Server 1 MultiEmbed (All Movies)',
+    buildUrl: (id, t, s, e) => t === 'series' ? `${_s1}${id}&s=${s}&e=${e}` : `${_s1}${id}`
+  },
+  server2: {
+    name: 'Server 2 AutoEmbed',
+    buildUrl: (id, t, s, e) => t === 'series' ? `${_s2}tv/${id}/${s}/${e}` : `${_s2}movie/${id}`
+  },
+  server3: {
+    name: 'Server 3 VidLink',
+    buildUrl: (id, t, s, e) => t === 'series' ? `${_s3}tv/${id}/${s}/${e}` : `${_s3}movie/${id}`
+  },
+  server4: {
+    name: 'Server 4 Kriss424',
+    buildUrl: (id) => `${_s4}${id}`
+  },
+  server5: {
+    name: 'Server 5 VidSrc',
+    buildUrl: (id, t, s, e) => t === 'series' ? `${_s5}tv/${id}/${s}/${e}` : `${_s5}movie/${id}`
+  },
+  server6: {
+    name: 'Server 6 Smashy',
+    buildUrl: (id, t, s, e) => t === 'series' ? `${_s6}tv/${id}/${s}/${e}` : `${_s6}movie/${id}`
+  },
+  server7: {
+    name: 'Server 7 2Embed',
+    buildUrl: (id, t, s, e) => t === 'series' ? `${_s7}${id}&s=${s}&e=${e}` : `https://www.2embed.cc/embed/${id}`
+  }
+};
+
+/* ---- CINEMETA API CLIENT ---- */
+const CBASE = 'https://v3-cinemeta.strem.io';
+const IMGB = 'https://images.metahub.space';
+const _cache = new Map();
+
+async function _fetch(url) {
+  const h = _cache.get(url);
+  if (h && Date.now() - h.t < 300000) return h.d;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(r.status);
+  const d = await r.json();
+  _cache.set(url, { d, t: Date.now() });
+  return d;
+}
+
+function mapMeta(m, type) {
+  return {
+    id: m.id,
+    title: m.name,
+    type,
+    year: (m.releaseInfo || m.year || '').toString().split('–')[0] || '2024',
+    rating: m.imdbRating ? parseFloat(m.imdbRating).toFixed(1) : '8.2',
+    genres: m.genres || [m.genre || 'Cinema'],
+    runtime: m.runtime || (type === 'series' ? 'TV Series' : 'HD Movie'),
+    poster: m.poster || `${IMGB}/poster/medium/${m.id}/img`,
+    backdrop: m.background || m.poster || `${IMGB}/background/medium/${m.id}/img`,
+    synopsis: m.description || 'Watch now in full HD on MINEXUS TV.',
+    videos: m.videos || []
+  };
+}
+
+const API = {
+  async catalog(type, catalogId, genre, skip) {
+    catalogId = catalogId || 'top';
+    const p = [];
+    if (genre) p.push(`genre=${encodeURIComponent(genre)}`);
+    if (skip) p.push(`skip=${skip}`);
+    const url = p.length ? `${CBASE}/catalog/${type}/${catalogId}/${p.join('&')}.json` : `${CBASE}/catalog/${type}/${catalogId}.json`;
+    const d = await _fetch(url);
+    return (d.metas || []).map(m => mapMeta(m, type));
+  },
+  async getMeta(type, id) {
+    const d = await _fetch(`${CBASE}/meta/${type}/${id}.json`);
+    if (!d || !d.meta) throw new Error('Not found');
+    return mapMeta(d.meta, type);
+  },
+  async detect(id) {
+    try { return await this.getMeta('movie', id); } catch(e) { return this.getMeta('series', id); }
+  },
+  async search(q) {
+    if (!q.trim()) return { movies: [], series: [] };
+    const enc = encodeURIComponent(q.trim());
+    const [mr, sr] = await Promise.all([
+      _fetch(`${CBASE}/catalog/movie/top/search=${enc}.json`).catch(() => ({ metas: [] })),
+      _fetch(`${CBASE}/catalog/series/top/search=${enc}.json`).catch(() => ({ metas: [] }))
+    ]);
+    return {
+      movies: (mr.metas || []).map(m => mapMeta(m, 'movie')),
+      series: (sr.metas || []).map(m => mapMeta(m, 'series'))
+    };
+  },
+  groupEpisodes(videos) {
+    const byS = {};
+    (videos || []).forEach(v => {
+      const s = v.season != null ? v.season : 1;
+      if (s === 0) return;
+      if (!byS[s]) byS[s] = [];
+      byS[s].push(v);
     });
-    // Toggle login/signup button visibility based on auth state
-    firebase.auth().onAuthStateChanged(function (user) {
-      document.getElementById('navLoginBtn').style.display = user ? 'none' : 'flex';
+    Object.keys(byS).forEach(s => byS[s].sort((a, b) => (a.episode || 0) - (b.episode || 0)));
+    return byS;
+  }
+};
+
+/* ---- STATE ---- */
+const S = {
+  view: 'home', prevView: 'home',
+  user: null, watchlist: {}, likes: {}, history: {}, searches: [],
+  heroItems: [], heroIdx: 0, heroTimer: null,
+  activeItem: null, activeServer: 'server1', // MultiEmbed Default
+  activeSeason: 1, activeEpisode: 1, seriesMeta: null,
+  moviesFilter: 'all', moviesSkip: 0,
+  seriesFilter: 'all', seriesSkip: 0,
+  channels: [], customChannels: [], activeCountry: 'PK',
+  accountSubTab: 'history',
+  watchTimerInterval: null,
+  hlsInstance: null
+};
+
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${msg}</span>`;
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(() => { el.classList.add('removing'); setTimeout(() => el.remove(), 250); }, 3000);
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ---- VIEW SWITCHER ---- */
+function switchView(name) {
+  if (S.view === name && name !== 'home') return;
+  S.prevView = S.view;
+  S.view = name;
+
+  if (name === 'player' || name === 'livePlayer') {
+    document.body.classList.add('in-player');
+  } else {
+    document.body.classList.remove('in-player');
+    const liveVid = document.getElementById('liveVideoPlayer');
+    if (liveVid) { liveVid.pause(); liveVid.src = ''; }
+    if (S.hlsInstance) { S.hlsInstance.destroy(); S.hlsInstance = null; }
+    const cf = document.getElementById('cinemaFrame');
+    if (cf) cf.src = '';
+  }
+
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById(name === 'player' ? 'viewPlayer' : name === 'livePlayer' ? 'viewLivePlayer' : `view${name.charAt(0).toUpperCase() + name.slice(1)}`);
+  if (el) el.classList.add('active');
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+
+  if (name === 'movies' && S.moviesSkip === 0) loadMoviesGrid();
+  if (name === 'series' && S.seriesSkip === 0) loadSeriesGrid();
+  if (name === 'live') loadLiveTV();
+  if (name === 'leaderboard') renderLeaderboard();
+  if (name === 'account') renderAccountView();
+  if (name === 'search') setTimeout(() => document.getElementById('searchViewInput').focus(), 150);
+}
+
+/* ---- CONTENT CARDS ---- */
+function buildCard(item, size = 'standard') {
+  const rating = item.rating ? `<div class="card-rating"><i class="fas fa-star"></i>${item.rating}</div>` : '';
+  const typeBadge = `<div class="card-type">${item.type === 'series' ? 'SERIES' : 'MOVIE'}</div>`;
+  const itemJson = esc(JSON.stringify(item));
+
+  return `
+    <div class="card ${size}" onclick="openPlayer(JSON.parse(this.dataset.item))" data-item="${itemJson}">
+      <img class="card-poster" src="${esc(item.poster)}" alt="${esc(item.title)}" loading="lazy"
+        onerror="this.src='https://via.placeholder.com/200x300/141724/e50914?text=${encodeURIComponent(item.title)}';">
+      <div class="card-overlay"><div class="card-play-icon"><i class="fas fa-play"></i></div></div>
+      ${rating}${typeBadge}
+      <div class="card-info">
+        <div class="card-title">${esc(item.title)}</div>
+        <div class="card-sub">${esc(item.year)} • ${(item.genres || []).slice(0, 1).join('')}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---- HERO CAROUSEL ---- */
+async function initHero() {
+  try {
+    const [mv, sv] = await Promise.all([API.catalog('movie', 'top'), API.catalog('series', 'top')]);
+    S.heroItems = [...mv.slice(0, 6), ...sv.slice(0, 4)].sort(() => Math.random() - .5);
+    renderHero();
+    const dots = document.getElementById('heroDots');
+    dots.innerHTML = S.heroItems.map((_, i) => `<span class="hero-dot${i === 0 ? ' active' : ''}" onclick="setHero(${i})"></span>`).join('');
+    clearInterval(S.heroTimer);
+    S.heroTimer = setInterval(() => setHero((S.heroIdx + 1) % S.heroItems.length), 6500);
+  } catch (e) {}
+}
+
+function renderHero() {
+  const item = S.heroItems[S.heroIdx];
+  if (!item) return;
+  document.getElementById('heroBg').style.backgroundImage = `url('${item.backdrop || item.poster}')`;
+  document.getElementById('heroTitle').textContent = item.title;
+  document.getElementById('heroSynopsis').textContent = item.synopsis || 'Stream on MINEXUS TV.';
+  document.getElementById('heroYear').textContent = item.year;
+  document.getElementById('heroRuntime').textContent = item.runtime;
+  document.getElementById('heroGenre').textContent = (item.genres || []).slice(0, 2).join(' • ');
+  document.getElementById('heroRating').textContent = item.rating || '8.5';
+  document.getElementById('heroTypeBadge').textContent = item.type === 'series' ? 'SERIES' : 'MOVIE';
+  document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('active', i === S.heroIdx));
+
+  document.getElementById('heroPlayBtn').onclick = () => openPlayer(item);
+  document.getElementById('heroWlBtn').onclick = () => toggleWatchlist(item, document.getElementById('heroWlBtn'));
+  document.getElementById('heroLikeBtn').onclick = () => toggleLike(item, document.getElementById('heroLikeBtn'));
+}
+function setHero(i) { S.heroIdx = i; renderHero(); }
+
+/* ---- HOME ROWS ---- */
+async function loadRows() {
+  try {
+    const [trend, bw, topS] = await Promise.all([
+      API.catalog('movie', 'top', null, 0),
+      API.catalog('movie', 'top', 'Romance', 0),
+      API.catalog('series', 'top', null, 0)
+    ]);
+    const render = (id, list, sz) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = list.slice(0, 16).map(i => buildCard(i, sz)).join('');
+    };
+    render('trendingRow', trend, 'featured');
+    render('bollywoodRow', bw, 'featured');
+    render('seriesRow', topS, 'featured');
+  } catch (e) {}
+}
+
+/* ---- GRIDS ---- */
+async function loadMoviesGrid(append = false) {
+  if (!append) S.moviesSkip = 0;
+  const grid = document.getElementById('moviesGrid');
+  if (!append) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px"><div class="spinner" style="margin:0 auto 10px"></div><span>Loading...</span></div>`;
+
+  try {
+    let items = await API.catalog('movie', 'top', S.moviesFilter === 'all' ? null : S.moviesFilter, S.moviesSkip);
+    if (!append) grid.innerHTML = '';
+    grid.innerHTML += (items || []).map(i => buildCard(i, 'big')).join('');
+    S.moviesSkip += (items.length || 0);
+    document.getElementById('moviesLoadMoreWrap').style.display = items.length >= 10 ? 'block' : 'none';
+  } catch (e) {}
+}
+
+async function loadSeriesGrid(append = false) {
+  if (!append) S.seriesSkip = 0;
+  const grid = document.getElementById('seriesGrid');
+  if (!append) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px"><div class="spinner" style="margin:0 auto 10px"></div><span>Loading...</span></div>`;
+
+  try {
+    let items = await API.catalog('series', 'top', S.seriesFilter === 'all' ? null : S.seriesFilter, S.seriesSkip);
+    if (!append) grid.innerHTML = '';
+    grid.innerHTML += (items || []).map(i => buildCard(i, 'big')).join('');
+    S.seriesSkip += (items.length || 0);
+    document.getElementById('seriesLoadMoreWrap').style.display = items.length >= 10 ? 'block' : 'none';
+  } catch (e) {}
+}
+
+/* ---- LIVE TV ENGINE ---- */
+async function loadLiveTV() {
+  const grid = document.getElementById('channelsGrid');
+  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px"><div class="spinner" style="margin:0 auto 10px"></div><span>Loading channels...</span></div>`;
+
+  try {
+    let channels = [];
+    if (S.activeCountry === 'WORLD') {
+      channels = S.customChannels;
+    } else {
+      const res = await fetch(`https://iptv-org.github.io/iptv/countries/${S.activeCountry.toLowerCase()}.m3u`);
+      const text = await res.text();
+      channels = parseM3U(text, S.activeCountry);
+      const customForCountry = S.customChannels.filter(c => c.country === S.activeCountry);
+      channels = [...customForCountry, ...channels];
+    }
+
+    if (!channels.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)"><p>No channels found</p></div>`;
+      return;
+    }
+
+    grid.innerHTML = channels.slice(0, 50).map(ch => `
+      <div class="channel-card" onclick="openLivePlayer(JSON.parse(this.dataset.ch))" data-ch="${esc(JSON.stringify(ch))}">
+        <div class="channel-logo-wrap">
+          ${ch.logo ? `<img class="channel-logo" src="${esc(ch.logo)}" alt="${esc(ch.name)}" onerror="this.style.display='none'">` : ''}
+          <div class="channel-logo-fallback">${esc(ch.name.slice(0, 3).toUpperCase())}</div>
+          <div class="channel-live-badge">LIVE</div>
+        </div>
+        <div class="channel-info">
+          <div class="channel-name">${esc(ch.name)}</div>
+          <div class="channel-country">${ch.country} • Live Stream</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)"><p>Live channels offline</p></div>`;
+  }
+}
+
+function parseM3U(text, country) {
+  const lines = text.split('\n');
+  const list = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('#EXTINF')) {
+      const nameM = line.match(/,(.+)$/);
+      const logoM = line.match(/tvg-logo="([^"]+)"/);
+      const name = nameM ? nameM[1].trim() : 'Channel';
+      const streamUrl = lines[i + 1] && !lines[i + 1].startsWith('#') ? lines[i + 1].trim() : '';
+      if (streamUrl) list.push({ name, logo: logoM ? logoM[1] : '', country, streamUrl });
+    }
+  }
+  return list;
+}
+
+function openLivePlayer(ch) {
+  switchView('livePlayer');
+  document.getElementById('livePlayerTitle').textContent = ch.name;
+  const loader = document.getElementById('livePlayerLoader');
+  const video = document.getElementById('liveVideoPlayer');
+  loader.style.display = 'flex';
+
+  if (S.hlsInstance) { S.hlsInstance.destroy(); S.hlsInstance = null; }
+
+  if (Hls.isSupported() && ch.streamUrl.endsWith('.m3u8')) {
+    const hls = new Hls({ enableWorker: true });
+    hls.loadSource(ch.streamUrl);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play().catch(() => {});
+      loader.style.display = 'none';
     });
-  </script>
+    hls.on(Hls.Events.ERROR, () => {
+      loader.innerHTML = '<span style="color:#ff6b6b">Stream buffer. Try another.</span>';
+    });
+    S.hlsInstance = hls;
+  } else {
+    video.src = ch.streamUrl;
+    video.play().catch(() => {});
+    loader.style.display = 'none';
+  }
+
+  document.getElementById('liveChMeta').innerHTML = `
+    ${ch.logo ? `<img src="${esc(ch.logo)}" style="width:36px;height:36px;object-fit:contain;background:var(--bg4);border-radius:6px;padding:2px">` : ''}
+    <div>
+      <strong style="font-size:13px;display:block">${esc(ch.name)}</strong>
+      <span style="font-size:10px;color:var(--text3)">${ch.country} • Live Stream</span>
+    </div>
+  `;
+}
+
+/* ---- MULTI-SERVER CINEMA PLAYER (MULTISEMBED DEFAULT) ---- */
+function openPlayer(item) {
+  S.activeItem = item;
+  S.activeServer = 'server1'; // DEFAULT: MultiEmbed
+  S.activeSeason = 1; S.activeEpisode = 1;
+  switchView('player');
+  buildPlayerUI();
+  playStream();
+  loadPlayerMeta(item);
+
+  // Log to history & increment user watch counter
+  if (S.user) {
+    db.ref(`users/${S.user.uid}/history/${item.id}`).set({
+      id: item.id,
+      title: item.title,
+      poster: item.poster || '',
+      type: item.type || 'movie',
+      year: item.year || '2024',
+      watchedAt: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    // Increment points & stream count for Leaderboard
+    db.ref(`users/${S.user.uid}/stats/watchCount`).transaction(c => (c || 0) + 1);
+    db.ref(`users/${S.user.uid}/stats/points`).transaction(p => (p || 0) + 15);
+  }
+}
+
+async function loadPlayerMeta(item) {
+  try {
+    const meta = await API.getMeta(item.type, item.id);
+    S.activeItem = { ...item, ...meta };
+    S.seriesMeta = meta;
+    buildPlayerUI();
+    if (item.type === 'series') buildEpisodes();
+  } catch (e) {}
+}
+
+function buildPlayerUI() {
+  const item = S.activeItem;
+  if (!item) return;
+  document.getElementById('playerTopTitle').textContent = item.title;
+  document.getElementById('playerTitleBig').textContent = item.title;
+  document.getElementById('playerPoster').src = item.poster;
+  document.getElementById('playerDesc').textContent = item.synopsis;
+  document.getElementById('episodesSection').style.display = item.type === 'series' ? 'block' : 'none';
+
+  // Update Watchlist & Like button states
+  const inWl = S.watchlist && S.watchlist[item.id];
+  const inLike = S.likes && S.likes[item.id];
+  const wlBtn = document.getElementById('playerWlBtn');
+  const lkBtn = document.getElementById('playerLikeBtn');
+  wlBtn.classList.toggle('active', inWl);
+  wlBtn.innerHTML = inWl ? '<i class="fas fa-bookmark"></i> Saved' : '<i class="far fa-bookmark"></i> Watchlist';
+  lkBtn.classList.toggle('active', inLike);
+  lkBtn.innerHTML = inLike ? '<i class="fas fa-heart"></i> Liked' : '<i class="far fa-heart"></i> Like';
+
+  wlBtn.onclick = () => toggleWatchlist(item, wlBtn);
+  lkBtn.onclick = () => toggleLike(item, lkBtn);
+}
+
+function playStream() {
+  const item = S.activeItem;
+  if (!item) return;
+  const srv = SERVERS[S.activeServer];
+  const url = srv.buildUrl(item.id, item.type, S.activeSeason, S.activeEpisode);
+
+  const frame = document.getElementById('cinemaFrame');
+  const loader = document.getElementById('playerLoader');
+  loader.style.display = 'flex';
+  frame.src = url;
+
+  frame.onload = () => { setTimeout(() => { loader.style.display = 'none'; }, 400); };
+  document.querySelectorAll('.srv-btn').forEach(b => b.classList.toggle('active', b.dataset.server === S.activeServer));
+}
+
+function buildEpisodes() {
+  const meta = S.seriesMeta;
+  if (!meta || !meta.videos) return;
+  const bySeason = API.groupEpisodes(meta.videos);
+  const seasons = Object.keys(bySeason).sort((a, b) => Number(a) - Number(b));
+  const sel = document.getElementById('seasonSelect');
+  sel.innerHTML = seasons.map(s => `<option value="${s}">Season ${s}</option>`).join('');
+  sel.value = S.activeSeason;
+
+  const renderChips = (eps) => {
+    document.getElementById('episodesScroll').innerHTML = eps.map((ep, i) => `
+      <button class="ep-chip${S.activeEpisode === i + 1 ? ' active' : ''}" onclick="selectEp(${i + 1})">
+        Ep ${ep.episode || i + 1}
+      </button>
+    `).join('');
+    document.getElementById('curEpBadge').textContent = `S${S.activeSeason}:E${S.activeEpisode}`;
+  };
+
+  renderChips(bySeason[S.activeSeason] || []);
+
+  sel.onchange = () => {
+    S.activeSeason = Number(sel.value);
+    S.activeEpisode = 1;
+    renderChips(bySeason[S.activeSeason] || []);
+    playStream();
+  };
+
+  document.getElementById('prevEpBtn').onclick = () => { if (S.activeEpisode > 1) selectEp(S.activeEpisode - 1); };
+  document.getElementById('nextEpBtn').onclick = () => {
+    const eps = bySeason[S.activeSeason] || [];
+    if (S.activeEpisode < eps.length) selectEp(S.activeEpisode + 1);
+  };
+}
+
+function selectEp(ep) {
+  S.activeEpisode = ep;
+  document.querySelectorAll('.ep-chip').forEach((c, idx) => c.classList.toggle('active', idx + 1 === ep));
+  document.getElementById('curEpBadge').textContent = `S${S.activeSeason}:E${S.activeEpisode}`;
+  playStream();
+}
+
+function directPlay(rawId) {
+  let id = rawId.trim();
+  if (!id) return;
+  if (/^\d+$/.test(id)) id = 'tt' + id;
+  if (!id.startsWith('tt')) { toast('Enter valid IMDb ID', 'error'); return; }
+  toast('Loading...', 'info');
+  API.detect(id).then(m => openPlayer(m)).catch(() => {
+    openPlayer({ id, title: `IMDb Stream (${id})`, type: 'movie', year: '2024', rating: '8.5', genres: ['Cinema'], runtime: '4K', poster: `${IMGB}/poster/medium/${id}/img`, backdrop: `${IMGB}/background/medium/${id}/img`, synopsis: `Stream for ${id}` });
+  });
+}
+
+/* ---- SEARCH & RECENTS ---- */
+let searchTimer;
+function handleLiveSearch(q, dropdownEl) {
+  clearTimeout(searchTimer);
+  if (!q.trim()) { dropdownEl.classList.remove('show'); return; }
+  dropdownEl.innerHTML = `<div style="padding:10px;text-align:center;color:var(--text3)"><div class="spinner" style="width:18px;height:18px;margin:0 auto"></div></div>`;
+  dropdownEl.classList.add('show');
+
+  searchTimer = setTimeout(async () => {
+    try {
+      const { movies, series } = await API.search(q);
+      const list = [...movies.slice(0, 5), ...series.slice(0, 3)];
+      if (!list.length) { dropdownEl.innerHTML = `<div style="padding:10px;text-align:center;font-size:11px;color:var(--text3)">No titles found</div>`; return; }
+      dropdownEl.innerHTML = list.map(i => `
+        <div class="sdrop-item" onclick="document.querySelectorAll('.search-dropdown').forEach(d=>d.classList.remove('show')); openPlayer(JSON.parse(this.dataset.item))" data-item="${esc(JSON.stringify(i))}">
+          <img class="sdrop-poster" src="${esc(i.poster)}" alt="">
+          <div class="sdrop-info">
+            <div class="sdrop-title">${esc(i.title)}</div>
+            <div class="sdrop-meta">${esc(i.year)} • ${i.type === 'series' ? 'TV' : 'Movie'}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Save to recent searches
+      if (S.user && q.length > 2) {
+        db.ref(`users/${S.user.uid}/searches`).push({ query: q, time: firebase.database.ServerValue.TIMESTAMP });
+      }
+    } catch (e) {}
+  }, 300);
+}
+
+/* ---- WATCHLIST & LIKES ---- */
+function toggleWatchlist(item, btn) {
+  if (!S.user) return;
+  const id = item.id;
+  if (S.watchlist[id]) {
+    delete S.watchlist[id];
+    db.ref(`users/${S.user.uid}/watchlist/${id}`).remove();
+    toast('Removed from Watchlist', 'info');
+  } else {
+    S.watchlist[id] = { id: item.id, title: item.title, poster: item.poster, type: item.type, year: item.year };
+    db.ref(`users/${S.user.uid}/watchlist/${id}`).set({ ...S.watchlist[id], savedAt: firebase.database.ServerValue.TIMESTAMP });
+    toast('Saved to Watchlist', 'success');
+  }
+  buildPlayerUI();
+}
+
+function toggleLike(item, btn) {
+  if (!S.user) return;
+  const id = item.id;
+  if (S.likes[id]) {
+    delete S.likes[id];
+    db.ref(`users/${S.user.uid}/likes/${id}`).remove();
+    toast('Unliked', 'info');
+  } else {
+    S.likes[id] = { id: item.id, title: item.title, poster: item.poster, type: item.type, year: item.year };
+    db.ref(`users/${S.user.uid}/likes/${id}`).set({ ...S.likes[id], likedAt: firebase.database.ServerValue.TIMESTAMP });
+    toast('Added to Liked Movies ❤️', 'success');
+  }
+  buildPlayerUI();
+}
+
+/* ---- COMMUNITY LEADERBOARD DASHBOARD ---- */
+function renderLeaderboard() {
+  const podiumEl = document.getElementById('leaderPodium');
+  const listEl = document.getElementById('leaderboardList');
+
+  db.ref('users').once('value', snap => {
+    const users = snap.val() || {};
+    const rankList = Object.entries(users).map(([uid, u]) => {
+      const wCount = u.stats?.watchCount || (u.history ? Object.keys(u.history).length : 0);
+      const points = u.stats?.points || (wCount * 15);
+      return {
+        uid,
+        name: u.name || u.email?.split('@')[0] || 'Anonymous',
+        watchCount: wCount,
+        points: points
+      };
+    }).sort((a, b) => b.points - a.points);
+
+    if (!rankList.length) {
+      listEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3)">No ranked streamers yet. Start watching to rank #1!</div>`;
+      return;
+    }
+
+    // Update Nav Rank
+    if (S.user) {
+      const myIdx = rankList.findIndex(r => r.uid === S.user.uid);
+      if (myIdx > -1) document.getElementById('navRankPill').textContent = `#${myIdx + 1} Rank`;
+    }
+
+    // Top 3 Podium
+    const top1 = rankList[0];
+    const top2 = rankList[1];
+    const top3 = rankList[2];
+
+    podiumEl.innerHTML = `
+      ${top2 ? `
+        <div class="podium-item second">
+          <div class="podium-avatar">${top2.name.charAt(0).toUpperCase()}</div>
+          <div class="podium-name">${top2.name}</div>
+          <div class="podium-hours">${top2.points} pts</div>
+        </div>
+      ` : ''}
+      ${top1 ? `
+        <div class="podium-item first">
+          <i class="fas fa-crown crown-icon"></i>
+          <div class="podium-avatar">${top1.name.charAt(0).toUpperCase()}</div>
+          <div class="podium-name">${top1.name}</div>
+          <div class="podium-hours">${top1.points} pts</div>
+        </div>
+      ` : ''}
+      ${top3 ? `
+        <div class="podium-item third">
+          <div class="podium-avatar">${top3.name.charAt(0).toUpperCase()}</div>
+          <div class="podium-name">${top3.name}</div>
+          <div class="podium-hours">${top3.points} pts</div>
+        </div>
+      ` : ''}
+    `;
+
+    // Full Ranking List
+    listEl.innerHTML = rankList.map((u, i) => `
+      <div class="leader-row">
+        <div class="leader-rank">#${i + 1}</div>
+        <div class="leader-user-info">
+          <div class="leader-uname">${esc(u.name)} ${i === 0 ? '👑' : ''}</div>
+          <div class="leader-umeta">${u.watchCount} Titles Streamed</div>
+        </div>
+        <div class="leader-score">${u.points} PTS</div>
+      </div>
+    `).join('');
+  });
+}
+
+/* ---- ACCOUNT VIEW & SUBTABS ---- */
+function renderAccountView() {
+  if (!S.user) return;
+  const contentEl = document.getElementById('accTabContent');
+  const sub = S.accountSubTab;
+
+  document.getElementById('accWatchCount').textContent = Object.keys(S.history || {}).length;
+  document.getElementById('accWlCount').textContent = Object.keys(S.watchlist || {}).length;
+  document.getElementById('accLikeCount').textContent = Object.keys(S.likes || {}).length;
+
+  let items = [];
+  if (sub === 'history') items = Object.values(S.history || {}).reverse();
+  else if (sub === 'watchlist') items = Object.values(S.watchlist || {}).reverse();
+  else if (sub === 'likes') items = Object.values(S.likes || {}).reverse();
+  else if (sub === 'searches') {
+    contentEl.innerHTML = S.searches.map(s => `
+      <div style="padding:10px;background:var(--bg4);border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px">
+        <i class="fas fa-search" style="color:var(--accent)"></i> ${esc(s.query)}
+      </div>
+    `).join('') || '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text3)">No searches yet</div>';
+    return;
+  }
+
+  if (!items.length) {
+    contentEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text3)">No items saved in ${sub} yet.</div>`;
+    return;
+  }
+
+  contentEl.innerHTML = items.map(i => buildCard(i, 'standard')).join('');
+}
+
+/* ---- FIREBASE LISTENERS ---- */
+db.ref('custom_channels').on('value', snap => {
+  S.customChannels = Object.values(snap.val() || {});
+});
+
+db.ref('notifications').limitToLast(1).on('child_added', snap => {
+  const n = snap.val();
+  if (n && n.title) {
+    const pop = document.getElementById('notifBannerPopup');
+    document.getElementById('notifBannerTitle').textContent = n.title;
+    document.getElementById('notifBannerMsg').textContent = n.message;
+    document.getElementById('notifBannerActionBtn').onclick = () => {
+      pop.style.display = 'none';
+      if (n.target) directPlay(n.target);
+    };
+    pop.style.display = 'flex';
+  }
+});
+
+db.ref('app_config').on('value', snap => {
+  const cfg = snap.val();
+  if (cfg && cfg.force_update) {
+    document.getElementById('forceUpdateMsg').textContent = cfg.update_msg || 'A critical update is available.';
+    document.getElementById('forceUpdateDownloadBtn').href = cfg.update_url || '#';
+    document.getElementById('forceUpdateOverlay').style.display = 'flex';
+  } else {
+    document.getElementById('forceUpdateOverlay').style.display = 'none';
+  }
+});
+
+/* ---- AUTH STATE ---- */
+auth.onAuthStateChanged(user => {
+  S.user = user || null;
+  const lock = document.getElementById('authLockOverlay');
+
+  if (user) {
+    lock.style.display = 'none';
+    const init = (user.displayName || user.email || 'M').charAt(0).toUpperCase();
+    document.getElementById('accAvatar').textContent = init;
+    document.getElementById('accName').textContent = user.displayName || user.email?.split('@')[0] || 'Member';
+
+    // Sync user data in realtime
+    db.ref(`users/${user.uid}/watchlist`).on('value', s => { S.watchlist = s.val() || {}; });
+    db.ref(`users/${user.uid}/likes`).on('value', s => { S.likes = s.val() || {}; });
+    db.ref(`users/${user.uid}/history`).on('value', s => { S.history = s.val() || {}; });
+    db.ref(`users/${user.uid}/searches`).limitToLast(20).on('value', s => { S.searches = Object.values(s.val() || {}).reverse(); });
+
+    db.ref(`users/${user.uid}`).update({
+      email: user.email || '',
+      name: user.displayName || user.email?.split('@')[0] || '',
+      lastSeen: firebase.database.ServerValue.TIMESTAMP
+    });
+  } else {
+    lock.style.display = 'flex';
+    S.watchlist = {}; S.likes = {}; S.history = {};
+  }
+});
+
+/* ---- INITIALIZATION ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-view]').forEach(el => {
+    el.addEventListener('click', () => switchView(el.dataset.view));
+  });
+  document.getElementById('logoBtn').onclick = () => switchView('home');
+
+  document.getElementById('playerBackBtn').onclick = () => switchView(S.prevView || 'home');
+  document.getElementById('livePlayerBack').onclick = () => switchView('live');
+
+  // Server buttons
+  document.getElementById('serversRow').addEventListener('click', e => {
+    const btn = e.target.closest('.srv-btn');
+    if (!btn) return;
+    S.activeServer = btn.dataset.server;
+    playStream();
+    toast(`${SERVERS[S.activeServer]?.name} Selected`, 'info');
+  });
+
+  // Direct Form
+  document.getElementById('directPlayBtn').onclick = () => directPlay(document.getElementById('directInput').value);
+  document.getElementById('directInput').addEventListener('keypress', e => { if (e.key === 'Enter') directPlay(document.getElementById('directInput').value); });
+  document.querySelectorAll('.chip').forEach(c => {
+    c.onclick = () => { document.getElementById('directInput').value = c.dataset.imdb; directPlay(c.dataset.imdb); };
+  });
+
+  // Home Search
+  const homeIn = document.getElementById('homeSearchInput');
+  const homeClr = document.getElementById('homeSearchClear');
+  const homeDd = document.getElementById('homeSearchDropdown');
+  homeIn.addEventListener('input', () => {
+    homeClr.style.display = homeIn.value ? 'block' : 'none';
+    handleLiveSearch(homeIn.value, homeDd);
+  });
+  homeClr.onclick = () => { homeIn.value = ''; homeClr.style.display = 'none'; homeDd.classList.remove('show'); };
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-box-container')) homeDd.classList.remove('show');
+  });
+
+  // Dedicated Search
+  document.getElementById('searchViewInput').addEventListener('input', e => {
+    const q = e.target.value;
+    const res = document.getElementById('searchResultsContainer');
+    if (!q.trim()) { res.innerHTML = ''; return; }
+    API.search(q).then(({ movies, series }) => {
+      res.innerHTML = `<div class="grid" style="margin-top:10px">${[...movies, ...series].map(i => buildCard(i, 'big')).join('')}</div>`;
+    });
+  });
+
+  // Live TV Country Tabs
+  document.getElementById('countryTabs').addEventListener('click', e => {
+    const tab = e.target.closest('.country-tab');
+    if (!tab) return;
+    S.activeCountry = tab.dataset.country;
+    document.querySelectorAll('.country-tab').forEach(t => t.classList.toggle('active', t === tab));
+    loadLiveTV();
+  });
+
+  // Account Sub-tabs
+  document.getElementById('accSubTabs').addEventListener('click', e => {
+    const stab = e.target.closest('.acc-stab');
+    if (!stab) return;
+    S.accountSubTab = stab.dataset.sub;
+    document.querySelectorAll('.acc-stab').forEach(t => t.classList.toggle('active', t === stab));
+    renderAccountView();
+  });
+
+  // Auth Handlers
+  document.getElementById('lockTabLogin').onclick = () => {
+    document.getElementById('lockLoginForm').style.display = 'block';
+    document.getElementById('lockSignupForm').style.display = 'none';
+    document.getElementById('lockTabLogin').classList.add('active');
+    document.getElementById('lockTabSignup').classList.remove('active');
+  };
+  document.getElementById('lockTabSignup').onclick = () => {
+    document.getElementById('lockLoginForm').style.display = 'none';
+    document.getElementById('lockSignupForm').style.display = 'block';
+    document.getElementById('lockTabSignup').classList.add('active');
+    document.getElementById('lockTabLogin').classList.remove('active');
+  };
+
+  document.getElementById('lockLoginBtn').onclick = async () => {
+    try {
+      await auth.signInWithEmailAndPassword(document.getElementById('lockEmail').value, document.getElementById('lockPassword').value);
+      toast('Welcome back to MINEXUS TV!', 'success');
+    } catch (e) { toast(e.message, 'error'); }
+  };
+  document.getElementById('lockSignupBtn').onclick = async () => {
+    try {
+      const c = await auth.createUserWithEmailAndPassword(document.getElementById('lockSignEmail').value, document.getElementById('lockSignPass').value);
+      if (document.getElementById('lockSignName').value) await c.user.updateProfile({ displayName: document.getElementById('lockSignName').value });
+      toast('Account Created!', 'success');
+    } catch (e) { toast(e.message, 'error'); }
+  };
+  document.getElementById('lockGoogleBtn').onclick = () => auth.signInWithPopup(googleProvider).catch(() => {});
+  document.getElementById('lockGoogleSignBtn').onclick = () => auth.signInWithPopup(googleProvider).catch(() => {});
+  document.getElementById('accountLogoutBtn').onclick = () => auth.signOut();
+
+  initHero();
+  loadRows();
+});
+</script>
 </body>
 </html>
