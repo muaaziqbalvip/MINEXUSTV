@@ -89,6 +89,7 @@
     activeEpisode: 1,
     seriesMeta: null,       // full meta incl. videos[] when playing a series
     isLoadingCatalog: false,
+    searchResultsOverride: null, // when set, the grid shows these exact search results instead of filtered catalog
     catalogSkip: 0,
     user: null,
     deferredInstallPrompt: null
@@ -135,6 +136,8 @@
       'infoModal', 'infoModalBackdrop', 'infoModalClose', 'infoBannerImg', 'infoTitle', 'infoRatingPill',
       'infoTypeBadge', 'infoMetaRow', 'infoPlot', 'infoDetailsTable', 'infoPlayNowBtn', 'infoWatchlistBtn',
       'toastContainer',
+      // Bottom Tab Bar
+      'bottomTabBar', 'tabHome', 'tabMovies', 'tabSeries', 'tabSearch', 'tabAccount',
       // Auth
       'authModal', 'authModalBackdrop', 'authModalClose', 'authTabLogin', 'authTabSignup',
       'loginForm', 'loginEmail', 'loginPassword', 'loginSubmitBtn', 'forgotPasswordLink',
@@ -571,6 +574,14 @@
     if (!skipRerenderNav) {
       DOM.navLinks.forEach(nav => nav.classList.toggle('active', nav.dataset.category === filterKey));
       DOM.mobileNavLinks.forEach(nav => nav.classList.toggle('active', nav.dataset.category === filterKey));
+      // Sync bottom tab bar highlight for the two categories it directly maps to
+      if (filterKey === 'movies' || filterKey === 'all') {
+        [DOM.tabHome, DOM.tabMovies, DOM.tabSeries].forEach(b => b.classList.remove('active'));
+        (filterKey === 'movies' ? DOM.tabMovies : DOM.tabHome).classList.add('active');
+      } else if (filterKey === 'series') {
+        [DOM.tabHome, DOM.tabMovies, DOM.tabSeries].forEach(b => b.classList.remove('active'));
+        DOM.tabSeries.classList.add('active');
+      }
     }
 
     let results = [...STATE.catalog];
@@ -626,21 +637,22 @@
     clearTimeout(searchDebounce);
     if (!query.trim()) {
       DOM.searchDropdown.style.display = 'none';
+      STATE.searchResultsOverride = null;
       applyFilters(STATE.activeFilter);
       return;
     }
 
     searchDebounce = setTimeout(async () => {
-      // Instant local filter of what's already loaded
+      // Instant local filter of whatever's already loaded, for zero-latency feedback
       applyFilters(STATE.activeFilter);
 
-      // Live server-side search for anything not already in the loaded catalog
+      // Live server-side search (IMDb + Cinemeta) for anything not already in the loaded catalog
       DOM.searchDropdown.innerHTML = `<div class="search-dropdown-item search-loading"><i class="fas fa-spinner fa-spin"></i> Searching MINEXUS live catalog...</div>`;
       DOM.searchDropdown.style.display = 'block';
 
       try {
         const { movies, series } = await MinexusAPI.search(query);
-        const results = [...movies, ...series].slice(0, 8);
+        const results = [...movies, ...series];
 
         if (!results.length) {
           DOM.searchDropdown.innerHTML = `
@@ -648,12 +660,15 @@
               <i class="fas fa-play-circle"></i>
               <div><strong>Direct Play IMDb ID: "${escapeHtml(query)}"</strong><small>Agar ye ek IMDb ID hai, MINEXUS par stream karein</small></div>
             </div>`;
+          // Nothing found anywhere — reflect that in the main grid too instead of showing stale results
+          STATE.searchResultsOverride = [];
+          renderCatalog([]);
         } else {
           // Merge into main catalog so cards/watchlist/play all work normally
           const existingIds = new Set(STATE.catalog.map(c => c.id));
           results.forEach(r => { if (!existingIds.has(r.id)) STATE.catalog.push(r); });
 
-          DOM.searchDropdown.innerHTML = results.map(m => `
+          DOM.searchDropdown.innerHTML = results.slice(0, 8).map(m => `
             <div class="search-dropdown-item" data-id="${m.id}">
               <img src="${m.poster}" alt="${escapeHtml(m.title)}" onerror="this.style.display='none'">
               <div class="search-item-info">
@@ -663,7 +678,11 @@
             </div>
           `).join('');
 
-          applyFilters(STATE.activeFilter);
+          // Show ALL matched results (not just the dropdown's top 8) in the main grid below —
+          // this is the "full search results page" behavior.
+          STATE.searchResultsOverride = results;
+          updateHeading(`🔎 Search Results for "${escapeHtml(query)}"`, `${results.length} titles found across MINEXUS live catalog`);
+          renderCatalog(results);
         }
       } catch (err) {
         DOM.searchDropdown.innerHTML = `<div class="search-dropdown-item search-loading">Search fail hui. Try again.</div>`;
@@ -877,6 +896,53 @@
     loadPlayerStream();
   }
 
+  /* ---- Real Fullscreen + Auto-Landscape Rotation ---- */
+  async function toggleRealFullscreen() {
+    const el = DOM.videoFrameContainer;
+    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+    try {
+      if (!isFullscreen) {
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+        else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen(); // iOS Safari video fallback
+
+        // Auto-rotate to landscape on phones that support the Screen Orientation lock API
+        if (screen.orientation && screen.orientation.lock) {
+          try { await screen.orientation.lock('landscape'); } catch (e) { /* not all browsers allow this, non-critical */ }
+        }
+      } else {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) { /* non-critical */ }
+        }
+      }
+    } catch (err) {
+      // Fallback: at least give a full-viewport theater experience if the native API is blocked
+      el.classList.toggle('theater-mode');
+    }
+  }
+
+  // Keep icon + theater-mode class in sync with actual fullscreen state (covers Esc key exits too)
+  function bindFullscreenSync() {
+    const onChange = () => {
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      DOM.videoFrameContainer.classList.toggle('theater-mode', isFs);
+      if (DOM.theaterModeBtn) {
+        DOM.theaterModeBtn.innerHTML = isFs
+          ? '<i class="fas fa-compress-arrows-alt"></i>'
+          : '<i class="fas fa-expand-arrows-alt"></i>';
+      }
+      if (!isFs && screen.orientation && screen.orientation.unlock) {
+        try { screen.orientation.unlock(); } catch (e) { /* non-critical */ }
+      }
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
+  }
+
   function closeCinemaPlayer() {
     DOM.playerModal.classList.remove('active');
     document.body.style.overflow = '';
@@ -1042,11 +1108,43 @@
   /* ==========================================================================
      15. EVENT LISTENERS
      ========================================================================== */
+  /* ==========================================================================
+     15b. BOTTOM TAB BAR NAVIGATION
+     ========================================================================== */
+  function setActiveTab(tab) {
+    [DOM.tabHome, DOM.tabMovies, DOM.tabSeries, DOM.tabSearch, DOM.tabAccount].forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+
+    if (tab === 'home') {
+      STATE.searchResultsOverride = null;
+      applyFilters('all');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (tab === 'movies') {
+      applyFilters('movies');
+      window.scrollTo({ top: DOM.movieGrid.offsetTop - 140, behavior: 'smooth' });
+    } else if (tab === 'series') {
+      applyFilters('series');
+      window.scrollTo({ top: DOM.movieGrid.offsetTop - 140, behavior: 'smooth' });
+    } else if (tab === 'search') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => DOM.searchInput.focus(), 300);
+    } else if (tab === 'account') {
+      if (MinexusAuth.isLoggedIn()) {
+        DOM.userMenu.classList.add('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        openAuthModal('Login karein apna MINEXUS TV account access karne ke liye.');
+      }
+    }
+  }
+
   function setupEventListeners() {
     // Category Nav (desktop + mobile)
     document.querySelectorAll('[data-category]').forEach(btn => {
       btn.addEventListener('click', () => {
         DOM.mobileNav.classList.remove('open');
+        STATE.searchResultsOverride = null;
         applyFilters(btn.dataset.category);
         DOM.searchInput.value = '';
         STATE.searchQuery = '';
@@ -1055,11 +1153,19 @@
 
     DOM.mobileMenuBtn.addEventListener('click', () => DOM.mobileNav.classList.toggle('open'));
 
+    // Bottom Tab Bar (mobile native-app style navigation)
+    DOM.tabHome.addEventListener('click', () => setActiveTab('home'));
+    DOM.tabMovies.addEventListener('click', () => setActiveTab('movies'));
+    DOM.tabSeries.addEventListener('click', () => setActiveTab('series'));
+    DOM.tabSearch.addEventListener('click', () => setActiveTab('search'));
+    DOM.tabAccount.addEventListener('click', () => setActiveTab('account'));
+
     // Search
     DOM.searchInput.addEventListener('input', (e) => handleSearchInput(e.target.value));
     DOM.searchClearBtn.addEventListener('click', () => {
       DOM.searchInput.value = '';
       STATE.searchQuery = '';
+      STATE.searchResultsOverride = null;
       DOM.searchClearBtn.style.display = 'none';
       DOM.searchDropdown.style.display = 'none';
       applyFilters(STATE.activeFilter);
@@ -1084,6 +1190,7 @@
     DOM.resetFiltersBtn.addEventListener('click', () => {
       DOM.searchInput.value = '';
       STATE.searchQuery = '';
+      STATE.searchResultsOverride = null;
       DOM.searchClearBtn.style.display = 'none';
       applyFilters('all');
     });
@@ -1096,9 +1203,7 @@
     DOM.serverButtonsWrap.querySelectorAll('.server-btn').forEach(btn => {
       btn.addEventListener('click', () => setServer(btn.dataset.server));
     });
-    DOM.theaterModeBtn.addEventListener('click', () => {
-      DOM.videoFrameContainer.classList.toggle('theater-mode');
-    });
+    DOM.theaterModeBtn.addEventListener('click', toggleRealFullscreen);
     DOM.shareMovieBtn.addEventListener('click', () => {
       if (!STATE.activeMovie) return;
       const shareData = {
@@ -1207,6 +1312,7 @@
   function initApp() {
     cacheDom();
     setupEventListeners();
+    bindFullscreenSync();
     setupPWAInstall();
     updateWatchlistCount();
     loadInitialCatalog();

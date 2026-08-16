@@ -75,8 +75,21 @@ const MinexusAPI = {
    */
   async search(query) {
     if (!query || !query.trim()) return { movies: [], series: [] };
-    const q = encodeURIComponent(query.trim());
+    const trimmed = query.trim();
+    const q = encodeURIComponent(trimmed);
 
+    // Primary: IMDb's own public suggestion/autocomplete endpoint — genuine title-relevance
+    // matching (typo-tolerant, prefix-aware), far more accurate than Cinemeta's search extra.
+    let imdbHits = [];
+    try {
+      const firstChar = trimmed.charAt(0).toLowerCase();
+      const safeChar = /[a-z0-9]/.test(firstChar) ? firstChar : 'a';
+      const imdbUrl = `https://v2.sg.media-imdb.com/suggestion/${safeChar}/${q}.json`;
+      const imdbData = await _cachedFetch(imdbUrl);
+      imdbHits = (imdbData.d || []).filter(d => d.id && /^tt\d+$/.test(d.id) && (d.qid === 'movie' || d.qid === 'tvSeries' || d.qid === 'tvMiniSeries' || !d.qid));
+    } catch (e) { /* IMDb suggestion endpoint unreachable — fall through to Cinemeta-only results */ }
+
+    // Secondary: Cinemeta's own search extra, run in parallel for additional coverage
     const [movieRes, seriesRes] = await Promise.all([
       _cachedFetch(`${CINEMETA_BASE}/catalog/movie/top/search=${q}.json`).catch(() => ({ metas: [] })),
       _cachedFetch(`${CINEMETA_BASE}/catalog/series/top/search=${q}.json`).catch(() => ({ metas: [] }))
@@ -85,11 +98,40 @@ const MinexusAPI = {
     let movies = (movieRes.metas || []).map(m => mapMetaSummary(m, 'movie'));
     let series = (seriesRes.metas || []).map(m => mapMetaSummary(m, 'series'));
 
-    // Fallback: if the live search extra returns nothing (addon-side limitation),
-    // do a local substring match against whatever top-catalog data is already cached
-    // in this session, so the user still gets relevant hits instead of a dead end.
+    // Enrich with real IMDb suggestion hits not already covered by Cinemeta's results
+    const existingIds = new Set([...movies, ...series].map(m => m.id));
+    const newImdbIds = imdbHits.filter(h => !existingIds.has(h.id)).slice(0, 12);
+
+    if (newImdbIds.length) {
+      const enriched = await Promise.all(newImdbIds.map(async (hit) => {
+        const guessedType = hit.qid === 'tvSeries' || hit.qid === 'tvMiniSeries' ? 'series' : 'movie';
+        try {
+          return await this.getMeta(guessedType, hit.id);
+        } catch (e) {
+          // Full meta lookup failed (rare) — fall back to the lightweight suggestion data
+          return {
+            id: hit.id,
+            title: hit.l,
+            type: guessedType,
+            year: (hit.y || '').toString(),
+            rating: null,
+            genres: [],
+            runtime: guessedType === 'series' ? 'TV Series' : '',
+            poster: (hit.i && hit.i.imageUrl) || this.posterUrl(hit.id),
+            backdrop: this.backdropUrl(hit.id),
+            synopsis: ''
+          };
+        }
+      }));
+      enriched.forEach(item => {
+        if (item.type === 'series') series.push(item); else movies.push(item);
+      });
+    }
+
+    // Local fallback: if everything above came up empty, filter whatever's already
+    // cached in this session so the user still gets something instead of a dead end.
     if (movies.length === 0 && series.length === 0) {
-      const needle = query.trim().toLowerCase();
+      const needle = trimmed.toLowerCase();
       const localHits = [];
       _cache.forEach((entry, url) => {
         if (!url.includes('/catalog/')) return;

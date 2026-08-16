@@ -10,15 +10,6 @@
  */
 
 const MinexusDB = {
-  apiKey: "AIzaSyCe9EAy36fx3RHy_cHOKP9BG8F_zkkTd4c",
-  authDomain: "minexustv-a23ba.firebaseapp.com",
-  databaseURL: "https://minexustv-a23ba-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "minexustv-a23ba",
-  storageBucket: "minexustv-a23ba.firebasestorage.app",
-  messagingSenderId: "33081080111",
-  appId: "1:33081080111:web:cd23b4fe22c0b7c18e09da",
-  measurementId: "G-CRYG4T0FDT"
-};
 
   /* ---------------- WATCHLIST ---------------- */
 

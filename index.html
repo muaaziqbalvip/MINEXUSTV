@@ -349,8 +349,8 @@
           src=""
           title="MINEXUS TV Cinema Player"
           allowfullscreen
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; display-capture"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-presentation allow-orientation-lock allow-popups allow-popups-to-escape-sandbox"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; display-capture; screen-wake-lock"
+          referrerpolicy="no-referrer"
         ></iframe>
       </div>
 
@@ -492,6 +492,30 @@
       </form>
     </div>
   </div>
+
+  <!-- ================= MOBILE BOTTOM TAB BAR ================= -->
+  <nav class="bottom-tab-bar" id="bottomTabBar">
+    <button class="tab-btn active" data-tab="home" id="tabHome">
+      <i class="fas fa-house"></i>
+      <span>Home</span>
+    </button>
+    <button class="tab-btn" data-tab="movies" id="tabMovies">
+      <i class="fas fa-film"></i>
+      <span>Movies</span>
+    </button>
+    <button class="tab-btn" data-tab="series" id="tabSeries">
+      <i class="fas fa-tv"></i>
+      <span>Series</span>
+    </button>
+    <button class="tab-btn" data-tab="search" id="tabSearch">
+      <i class="fas fa-search"></i>
+      <span>Search</span>
+    </button>
+    <button class="tab-btn" data-tab="account" id="tabAccount">
+      <i class="fas fa-circle-user"></i>
+      <span>Account</span>
+    </button>
+  </nav>
 
   <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
   <div class="toast-container" id="toastContainer"></div>
